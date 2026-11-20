@@ -7,7 +7,6 @@ using UnityEngine.InputSystem;
 /// Requiert : Rigidbody2D + PlayerInput (avec PlayerControls.inputactions assigné).
 /// Animator optionnel (paramètres : MoveX, MoveY, Speed, Attack).
 /// </summary>
-[RequireComponent(typeof(Rigidbody2D))]
 [RequireComponent(typeof(PlayerInput))]
 public class PlayerController : MonoBehaviour
 {
@@ -25,7 +24,7 @@ public class PlayerController : MonoBehaviour
     [Header("Références (optionnel)")]
     [SerializeField] private Animator animator;
 
-    private Rigidbody2D rb;
+    private Rigidbody rb;
     private InputAction moveAction;
     private InputAction attackAction;
 
@@ -41,10 +40,10 @@ public class PlayerController : MonoBehaviour
 
     private void Awake()
     {
-        rb = GetComponent<Rigidbody2D>();
-        rb.gravityScale = 0f;
+        rb = GetComponent<Rigidbody>();
+        //rb.gravityScale = 0f;
         rb.freezeRotation = true;
-        rb.interpolation = RigidbodyInterpolation2D.Interpolate;
+        rb.interpolation = RigidbodyInterpolation.Interpolate;
 
         var playerInput = GetComponent<PlayerInput>();
         moveAction = playerInput.actions["Move"];
@@ -69,7 +68,9 @@ public class PlayerController : MonoBehaviour
 
     private void FixedUpdate()
     {
-        Vector2 velocity = isAttacking ? Vector2.zero : Vector2.ClampMagnitude(moveInput, 1f) * moveSpeed;
+
+        Vector3 _moveInput = new Vector3(moveInput.x,0, moveInput.y);
+        Vector3 velocity = isAttacking ? Vector3.zero : Vector3.ClampMagnitude(_moveInput, 1f) * moveSpeed;
         rb.linearVelocity = velocity; // Unity 6. Sur Unity 2022 ou avant : rb.velocity
     }
 
@@ -101,11 +102,11 @@ public class PlayerController : MonoBehaviour
         animator.SetFloat(SpeedHash, isAttacking ? 0f : moveInput.magnitude);
     }*/
 
-    private static Vector2 ToFourDirections(Vector2 dir)
+    private static Vector2 ToFourDirections(Vector3 dir)
     {
         if (Mathf.Abs(dir.x) > Mathf.Abs(dir.y))
-            return dir.x > 0 ? Vector2.right : Vector2.left;
-        return dir.y > 0 ? Vector2.up : Vector2.down;
+            return dir.x > 0 ? Vector3.right : Vector3.left;
+        return dir.y > 0 ? Vector3.forward : Vector3.back;
     }
 
     private void OnDrawGizmosSelected()
