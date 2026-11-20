@@ -3,7 +3,9 @@ using UnityEngine;
 
 public abstract class PuppetPart : MonoBehaviour
 {
-    [SerializeField] public Dictionary<PuppetEnum, int> puppetBoosts;
+
+    public PuppetPartEnum slot;
+    [SerializeField] public Dictionary<PuppetStatEnum, int> puppetBoosts;
 
     
 }

@@ -15,7 +15,7 @@ public class Marionnette : MonoBehaviour
     [SerializeField] private Arm bras_droit;
 
     [SerializeField] private Leg jambe_gauche;
-    [SerializeField] private Leg jambe_droit;
+    [SerializeField] private Leg jambe_droite;
 
 
     [Header("Puppet Stats")]
@@ -30,7 +30,7 @@ public class Marionnette : MonoBehaviour
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
-        assembleur.Assemblement();
+        assembleur.Assemblement(tete,corps,bras_gauche,bras_droit,jambe_gauche,jambe_droite);
         CalculateStats();
     }
 
@@ -43,7 +43,7 @@ public class Marionnette : MonoBehaviour
         AddPuppetPartStats(bras_gauche);
         AddPuppetPartStats(bras_droit);
         AddPuppetPartStats(jambe_gauche);
-        AddPuppetPartStats(jambe_droit);
+        AddPuppetPartStats(jambe_droite);
 
     }
 
@@ -54,16 +54,16 @@ public class Marionnette : MonoBehaviour
         {
             switch (item.Key)
             {
-                case PuppetEnum.Hp:
+                case PuppetStatEnum.Hp:
                     hp += item.Value;
                     break;
-                case PuppetEnum.Resistance:
+                case PuppetStatEnum.Resistance:
                     resistance += item.Value;
                     break;
-                case PuppetEnum.Damages:
+                case PuppetStatEnum.Damages:
                     damages += item.Value;
                     break;
-                case PuppetEnum.Speed:
+                case PuppetStatEnum.Speed:
                     speed += item.Value;
                     break;
             }

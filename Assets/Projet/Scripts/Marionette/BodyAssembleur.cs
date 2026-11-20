@@ -1,92 +1,44 @@
-using UnityEditor;
+using System.Collections.Generic;
 using UnityEngine;
 
-
-
-
-[RequireComponent(typeof(MeshFilter), typeof(MeshRenderer))]
 public class BodyAssembleur : MonoBehaviour
 {
+    public Animator animator;
+    public BodyPartSlot[] slots;   // rempli dans l'inspecteur (6 entrées)
 
-    public void Assemblement()
+    readonly Dictionary<PuppetPartEnum, BodyPartSlot> slotLookup = new();
+    readonly Dictionary<PuppetPartEnum, GameObject> equipped = new();
+
+    void Awake()
     {
-        MeshFilter[] meshFilters = GetComponentsInChildren<MeshFilter>();
-        CombineInstance[] instances = new CombineInstance[meshFilters.Length];
-
-        for (int i = 0; i < meshFilters.Length; i++)
-        {
-            var meshFilter = meshFilters[i];
-
-            instances[i] = new CombineInstance
-            {
-                mesh = meshFilter.sharedMesh,
-                transform = meshFilter.transform.localToWorldMatrix,
-            };
-
-            meshFilter.gameObject.SetActive(false);
-        }
-
-        Mesh combinedMesh = new Mesh();
-        combinedMesh.CombineMeshes(instances);
-        gameObject.GetComponent<MeshFilter>().sharedMesh = combinedMesh;
-        gameObject.SetActive(true);
+        foreach (var s in slots) slotLookup[s.puppetpart] = s;
     }
 
-    public void Remplacer(MeshFilter targetMeshFilter, Mesh replacementMesh, int subMeshIndexToReplace = 0)
+    public void Assemblement(Head head, Body body, Arm leftArm, Arm rightArm, Leg leftLeg, Leg rightLeg)
     {
-        Mesh originalMesh = targetMeshFilter.sharedMesh;
-
-        if (originalMesh == null || replacementMesh == null) return;
-        if (subMeshIndexToReplace < 0 || subMeshIndexToReplace >= originalMesh.subMeshCount) return;
-
-        int subMeshCount = originalMesh.subMeshCount;
-        CombineInstance[] combine = new CombineInstance[subMeshCount];
-
-        for (int i = 0; i < subMeshCount; i++)
-        {
-            combine[i].transform = Matrix4x4.identity;
-
-            if (i == subMeshIndexToReplace)
-            {
-                // On insère le nouveau mesh à l'index voulu
-                combine[i].mesh = replacementMesh;
-            }
-            else
-            {
-                // On extrait le sub-mesh existant sous forme de Mesh indépendant
-                combine[i].mesh = ExtractSubMesh(originalMesh, i);
-            }
-        }
-
-        // Création du nouveau mesh composé
-        Mesh newCombinedMesh = new Mesh();
-        newCombinedMesh.name = originalMesh.name + "_Modified";
-
-        // Le deuxième paramètre 'false' est crucial : il indique de garder les sub-meshes séparés
-        newCombinedMesh.CombineMeshes(combine, false, false);
-
-        targetMeshFilter.mesh = newCombinedMesh;
+        Equip(PuppetPartEnum.Head, head);
+        Equip(PuppetPartEnum.Torso, body);
+        Equip(PuppetPartEnum.LeftArm, leftArm);
+        Equip(PuppetPartEnum.RightArm, rightArm);
+        Equip(PuppetPartEnum.LeftLeg, leftLeg);
+        Equip(PuppetPartEnum.RightLeg, rightLeg);
     }
 
-
-
-
-
-
-    // Méthode utilitaire pour isoler un sub-mesh précis
-    private Mesh ExtractSubMesh(Mesh mesh, int subMeshIndex)
+    public void Equip(PuppetPartEnum slot, PuppetPart part)
     {
-        Mesh subMesh = new Mesh();
-        subMesh.vertices = mesh.vertices;
-        subMesh.normals = mesh.normals;
-        subMesh.uv = mesh.uv;
-        subMesh.tangents = mesh.tangents;
-        subMesh.colors = mesh.colors;
+        if (!slotLookup.TryGetValue(slot, out var def))
+        {
+            Debug.LogError($"Aucun slot configuré pour {slot}", this);
+            return;
+        }
 
-        // On ne copie que les triangles du sub-mesh ciblé
-        subMesh.SetTriangles(mesh.GetTriangles(subMeshIndex), 0);
-        subMesh.RecalculateBounds();
+        if (equipped.TryGetValue(slot, out var old)) Destroy(old);
 
-        return subMesh;
+        var bone = animator.GetBoneTransform(def.bone);
+        var go = Instantiate(part.gameObject, bone);
+        go.transform.SetLocalPositionAndRotation(def.localPosition, Quaternion.Euler(def.localEuler));
+        go.transform.localScale = def.localScale;
+
+        equipped[slot] = go;
     }
 }
