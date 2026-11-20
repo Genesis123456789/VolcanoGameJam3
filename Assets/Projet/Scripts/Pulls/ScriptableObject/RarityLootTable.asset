@@ -1,0 +1,24 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e1410d4103e4e4a48a531ef6c1eb4fea, type: 3}
+  m_Name: RarityLootTable
+  m_EditorClassIdentifier: Assembly-CSharp::RarityLootTable
+  items:
+  - _Capacity: {fileID: 11400000, guid: 31d49279ec79b2744b1cde34600b214c, type: 2}
+    _Weight: 1
+  - _Capacity: {fileID: 11400000, guid: 6149d9290c1222540a604333e8b09c99, type: 2}
+    _Weight: 1
+  - _Capacity: {fileID: 11400000, guid: 1e9861ddefa69ee43a60a62c7c417552, type: 2}
+    _Weight: 1
+  - _Capacity: {fileID: 11400000, guid: bc84ad9767ee3214ca28e428b8876aaa, type: 2}
+    _Weight: 1
+  totalWeight: 0
