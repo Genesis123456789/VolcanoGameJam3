@@ -12,4 +12,4 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: dea5170ba015c634c86580af09b80e2c, type: 3}
   m_Name: Capacity_01
   m_EditorClassIdentifier: Assembly-CSharp::Capacity
-  capacityName: 
+  capacityName: Baguette01
