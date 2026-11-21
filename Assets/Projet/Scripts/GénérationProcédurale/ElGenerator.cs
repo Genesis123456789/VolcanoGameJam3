@@ -6,6 +6,8 @@ public class ElGenerator : MonoBehaviour
     [SerializeField] private GameObject pfbCubeToInstanciate;
     [SerializeField] private GameObject pfbDoor;
 
+    [SerializeField] private GameObject pfbenemy;
+
 
     [SerializeField] private List<SalleProcédurale> rooms = new List<SalleProcédurale>();
 
@@ -99,7 +101,7 @@ public PorteScript GenerateRoom(PorteScript fromDoor = null)
     }
 
     PorteScript entryDoor = null;
-
+    List<Vector3> safePoints = new List<Vector3>();
     for (int i = 0; i < doorList.Count; i++)
     {
         var (a, b) = doorList[i];
@@ -118,21 +120,74 @@ public PorteScript GenerateRoom(PorteScript fromDoor = null)
         porte.generator = this;
         porte.doorCenter = origin + mid;
         porte.arrivalPoint = origin + mid + InwardDirection(side) * 2f;
+        safePoints.Add(mid + InwardDirection(side) * 2f); // zone devant chaque porte (coordonnées locales)
 
         if (entrySide.HasValue && i == 0) entryDoor = porte;
     }
 
-    // Première salle : le joueur spawn au centre
-    if (fromDoor == null)
-    {
-        TeleportPlayer(origin + new Vector3(sizeX / 2f, 0, sizeZ / 2f));
-    }
+        // Première salle : le joueur spawn au centre
+        if (fromDoor == null)
+        {
+            Vector3 center = new Vector3(sizeX / 2f, 0, sizeZ / 2f);
+            safePoints.Add(center);
+            TeleportPlayer(origin + center);
+        }
 
-    return entryDoor;
+        SpawnEnnemies(room, sizeX, sizeZ, safePoints);
+
+        return entryDoor;
+        
 }
 
-// Vrai si un rectangle (X/Z) de cette taille chevauche une salle déjà générée
-private bool OverlapsExisting(Vector3 origin, int sizeX, int sizeZ)
+    [SerializeField] private Vector2Int enemyCountRange = new Vector2Int(2, 6); // min inclus, max exclus
+    [SerializeField] private float enemySafeRadius = 4f; // distance minimale aux portes / au joueur
+    private void SpawnEnnemies(SalleProcédurale room, int sizeX, int sizeZ, List<Vector3> safePoints)
+    {
+        if (pfbenemy == null) return;
+
+        // Cases du sol : on exclut les murs (bords) et les zones proches des portes
+        List<Vector3> freeCells = new List<Vector3>();
+        for (int x = 1; x < sizeX - 1; x++)
+        {
+            for (int z = 1; z < sizeZ - 1; z++)
+            {
+                Vector3 cell = new Vector3(x, 0, z);
+
+                bool tooClose = false;
+                foreach (Vector3 p in safePoints)
+                {
+                    if (Vector3.Distance(cell, p) < enemySafeRadius) { tooClose = true; break; }
+                }
+
+                if (!tooClose) freeCells.Add(cell);
+            }
+        }
+
+        int count = Mathf.Min(Random.Range(enemyCountRange.x, enemyCountRange.y), freeCells.Count);
+
+        for (int i = 0; i < count; i++)
+        {
+            int index = Random.Range(0, freeCells.Count);
+            Vector3 cell = freeCells[index];
+            freeCells.RemoveAt(index); // une case = un seul ennemi
+
+            GameObject enemy = Instantiate(pfbenemy, room.transform);
+            enemy.transform.localPosition = new Vector3(cell.x, 2f, cell.z); // dessus du cube y=1, à ajuster selon le pivot
+            enemy.name = $"Ennemi ({cell.x}, {cell.z})";
+            room.Enemies.Add(enemy);
+        }
+    }
+
+
+
+
+
+
+
+
+
+    // Vrai si un rectangle (X/Z) de cette taille chevauche une salle déjà générée
+    private bool OverlapsExisting(Vector3 origin, int sizeX, int sizeZ)
 {
     foreach (var r in rooms)
     {
@@ -261,6 +316,11 @@ private bool OverlapsExisting(Vector3 origin, int sizeX, int sizeZ)
         if (cell.x == 0) return WallSide.West;
         return WallSide.East;    // cell.x == sizeX - 1
     }
+
+
+
+    //////////////////////////////////////////////Gestion de linking et du joueur ////////////////////////////////////////////////
+
 
 
     [SerializeField] private Transform player;

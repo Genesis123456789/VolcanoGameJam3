@@ -419,6 +419,7 @@ MonoBehaviour:
   canAttackPlayer: 0
   canShoot: 0
   isShooting: 0
+  isdead: 0
   player: {fileID: 1755498464}
   pfbProjectile: {fileID: 0}
   projectileSpawn: {fileID: 0}
@@ -602,6 +603,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ElGenerator
   pfbCubeToInstanciate: {fileID: 7299980607722781064, guid: 6421e70ed8a78bf49a58e96821b9e7f9, type: 3}
   pfbDoor: {fileID: 3737796809187142545, guid: 91f7c90168868eb498bb8e871037bcd5, type: 3}
+  pfbenemy: {fileID: 921885988}
+  rooms: []
+  enemyCountRange: {x: 2, y: 6}
+  enemySafeRadius: 4
   player: {fileID: 1755498464}
 --- !u!4 &1306426404
 Transform:
@@ -782,6 +787,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SafeZoneTest
   canTriggerEnnemies: 1
+  direction: {x: 0, y: 0, z: 0}
 --- !u!1 &1783025128
 GameObject:
   m_ObjectHideFlags: 0
@@ -933,7 +939,11 @@ PrefabInstance:
     - target: {fileID: 3364292042152693821, guid: 8963399b51433c047ad40afdd6ca9414, type: 3}
       propertyPath: m_Avatar
       value: 
-      objectReference: {fileID: 9000000, guid: cc66d86aa3368fe4b85189d3963689dd, type: 3}
+      objectReference: {fileID: 9000000, guid: 9074ec9b4b6d20846a9a6071e353dccf, type: 3}
+    - target: {fileID: 3364292042152693821, guid: 8963399b51433c047ad40afdd6ca9414, type: 3}
+      propertyPath: m_Controller
+      value: 
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []

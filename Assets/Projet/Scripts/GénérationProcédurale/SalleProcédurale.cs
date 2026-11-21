@@ -14,7 +14,8 @@ public class SalleProcédurale : MonoBehaviour
 
     [SerializeField] private List<GameObject> portes = new List<GameObject>();
 
-
+    [SerializeField] private List<GameObject> enemies = new List<GameObject>();
+    public List<GameObject> Enemies => enemies;
     public int SizeX { get => sizeX; set => sizeX = value; }
     public int SizeY { get => sizeY; set => sizeY = value; }
     public int Doors { get => doors; set => doors = value; }
