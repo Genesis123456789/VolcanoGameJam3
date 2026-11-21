@@ -11,6 +11,7 @@ public class Loot : MonoBehaviour
     public void LootLoot()
     {
         Debug.Log("Loot Récolté !", this);
-        Destroy(gameObject);
+        PlayerManager.instance.AddPartToInventory();
+        //Destroy(gameObject);
     }
 }

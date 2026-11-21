@@ -112,7 +112,7 @@ public class PlayerController : MonoBehaviour
         if (isDead) return;
         Vector3 _moveInput = new Vector3(moveInput.x,0, moveInput.y);
         Vector3 velocity = isAttacking ? Vector3.zero : Vector3.ClampMagnitude(_moveInput, 1f) * moveSpeed;
-        rb.linearVelocity = velocity; // Unity 6. Sur Unity 2022 ou avant : rb.velocity
+        rb.linearVelocity = velocity; // Unity 6. Sur Unity 2022 ou avant : rb.velocity 
     }
 
     private IEnumerator AttackRoutine()
