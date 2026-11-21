@@ -148,7 +148,7 @@ public class Enemy : MonoBehaviour
         isShooting = true;
         canMove = false;
         canAttack = false;
-        var p = Instantiate(pfbProjectile, projectileSpawn);
+        var p = Instantiate(pfbProjectile);
         Vector3 dir = player.position - projectileSpawn.position;
         p.transform.forward = dir.normalized;
         yield return new WaitForSeconds(stunLockTime);
