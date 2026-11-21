@@ -32,6 +32,7 @@ public class PlayerController : MonoBehaviour
     private Rigidbody rb;
     private InputAction moveAction;
     private InputAction attackAction;
+    private InputAction interactAction;
 
     private Vector2 moveInput;
     private Vector3 facing = Vector3.forward; // direction regardée (pour l'attaque et l'idle)
@@ -55,6 +56,7 @@ public class PlayerController : MonoBehaviour
         var playerInput = GetComponent<PlayerInput>();
         moveAction = playerInput.actions["Move"];
         attackAction = playerInput.actions["Attack"];
+        interactAction = playerInput.actions["Interact"];
 
         if (animator == null) animator = GetComponentInChildren<Animator>();
     }
@@ -70,7 +72,26 @@ public class PlayerController : MonoBehaviour
         if (attackAction.WasPressedThisFrame() && !isAttacking && Time.time >= nextAttackTime)
             StartCoroutine(AttackRoutine());
 
+        if (interactAction.WasPressedThisFrame())
+            Interact();
+        
         //UpdateAnimator();
+    }
+
+    private void Interact()
+    {
+        Debug.Log("E");
+
+        Collider[] cols = Physics.OverlapSphere(transform.position, 2f);
+
+        for (int i = 0; i < cols.Length; i++)
+        {
+            if (cols[i].gameObject.CompareTag("Loot"))
+            {
+                cols[i].GetComponent<Loot>().LootLoot();
+                Debug.Log("Loot " +  cols[i].gameObject.name !, this);
+            }
+        }
     }
 
     private void FixedUpdate()
@@ -124,6 +145,8 @@ public class PlayerController : MonoBehaviour
 
     public void TakeDamage(int damage)
     {
+        if (isDead) return;
+
         if (hp <= damage)
         {
             hp = 0;
