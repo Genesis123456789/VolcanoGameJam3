@@ -18,6 +18,7 @@ public class Enemy : MonoBehaviour
     [SerializeField] private bool canAttackPlayer;
     [SerializeField] private bool canShoot;
     [SerializeField] private bool isShooting;
+    [SerializeField] private bool isdead;
 
     [Header("Assign")]
 
@@ -96,6 +97,8 @@ public class Enemy : MonoBehaviour
 
     public void Death()
     {
+        if (isdead) return;
+        isdead = true;
         Debug.Log("Chuis mort !", this);
         canAttack = false;
         canMove = false;

@@ -33,6 +33,7 @@ public class PlayerController : MonoBehaviour
     private InputAction moveAction;
     private InputAction attackAction;
     private InputAction interactAction;
+    private InputAction inventoryAction;
 
     private Vector2 moveInput;
     private Vector3 facing = Vector3.forward; // direction regardée (pour l'attaque et l'idle)
@@ -57,6 +58,7 @@ public class PlayerController : MonoBehaviour
         moveAction = playerInput.actions["Move"];
         attackAction = playerInput.actions["Attack"];
         interactAction = playerInput.actions["Interact"];
+        inventoryAction = playerInput.actions["Inventory"];
 
         if (animator == null) animator = GetComponentInChildren<Animator>();
     }
@@ -74,8 +76,19 @@ public class PlayerController : MonoBehaviour
 
         if (interactAction.WasPressedThisFrame())
             Interact();
+
+        if (inventoryAction.WasPressedThisFrame())
+            OpenInventory();
+
+        
         
         //UpdateAnimator();
+    }
+
+    private void OpenInventory()
+    {
+        Debug.Log("uqerghqehoq e");
+        PlayerManager.instance.SetInventory();
     }
 
     private void Interact()
