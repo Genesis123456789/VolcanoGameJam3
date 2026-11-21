@@ -173,6 +173,7 @@ public PorteScript GenerateRoom(PorteScript fromDoor = null)
 
             GameObject enemy = Instantiate(pfbenemy, room.transform);
             enemy.transform.localPosition = new Vector3(cell.x, 2f, cell.z); // dessus du cube y=1, à ajuster selon le pivot
+            PlaceOnFloor(enemy, room.transform.position.y + 1.5f);
             enemy.name = $"Ennemi ({cell.x}, {cell.z})";
             room.Enemies.Add(enemy);
         }
@@ -298,7 +299,17 @@ public PorteScript GenerateRoom(PorteScript fromDoor = null)
         return result;
     }
 
+    // Remonte l'objet pour que le bas de son modèle touche le dessus du sol
+    private void PlaceOnFloor(GameObject obj, float floorTopY)
+    {
+        Renderer[] renderers = obj.GetComponentsInChildren<Renderer>();
+        if (renderers.Length == 0) return;
 
+        Bounds b = renderers[0].bounds;
+        foreach (Renderer r in renderers) b.Encapsulate(r.bounds);
+
+        obj.transform.position += Vector3.up * (floorTopY - b.min.y + 0.02f);
+    }
     public Vector2 DecideRoomSize()
     {
         int sizeX = Random.Range(15, 30);
