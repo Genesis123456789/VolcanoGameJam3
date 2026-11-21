@@ -1,0 +1,40 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9db6aca73c104161bb9cb159cf18c168, type: 3}
+  m_Name: PD_Part_Jambe_Ferree_D
+  m_EditorClassIdentifier: PuppetDungeon.Runtime::PuppetDungeon.PartDefinition
+  displayName: "Jambe Ferr\xE9e"
+  slot: 5
+  icon: {fileID: 0}
+  visualPrefab: {fileID: 1234111094199239224, guid: 9395abe5e06a3c847bdcd670d9c5d00c, type: 3}
+  replaceBaseSegments: 1
+  attackStyle: 0
+  baseStats:
+  - stat: 3
+    mode: 0
+    min: 0.4
+    max: 0.6
+  - stat: 9
+    mode: 0
+    min: 1
+    max: 2
+  - stat: 2
+    mode: 0
+    min: 1
+    max: 1
+  possiblePassives: 0900000006000000i
+  minRarity: 0
+  maxRarity: 4
+  dropWeight: 1
+  minDungeon: 0
+  starterOnly: 0
+  lore: "R\xE9cup\xE9r\xE9e sur le pont d'un navire de f\xEAte foraine. Elle claque sur les dalles comme un m\xE9tronome : on l'entend venir, rarement repartir."

@@ -1,0 +1,119 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7794607d33014af4b2810bf7976810d0, type: 3}
+  m_Name: PD_GameConfig
+  m_EditorClassIdentifier: PuppetDungeon.Runtime::PuppetDungeon.GameConfig
+  dungeonsPerVillage: 5
+  roomsPerDungeon: {x: 4, y: 6}
+  extraRoomsPerDungeon: 0.35
+  roomSizeX: {x: 11, y: 15}
+  roomSizeZ: {x: 8, y: 11}
+  bossRoomChance: 0.12
+  exitGuardianChance: 0.5
+  safeZoneRadius: 2.6
+  enemies:
+  - {fileID: 11400000, guid: d1d7d9b2567a30f469d0f951532bed73, type: 2}
+  - {fileID: 11400000, guid: 218e2c66ece95664985eaae1b4e3e6f1, type: 2}
+  - {fileID: 11400000, guid: 7d67ae3270cee4242bb93253c76f83ad, type: 2}
+  - {fileID: 11400000, guid: b3402fab382bb0d4b83a2bdca0b43568, type: 2}
+  bosses:
+  - {fileID: 11400000, guid: 6b78444de095671478b39e8615b89bc2, type: 2}
+  - {fileID: 11400000, guid: 9ccb1549493914345835e32eac95ae3f, type: 2}
+  enemiesPerRoom: {x: 2, y: 4}
+  extraEnemiesPerDungeon: 0.4
+  enemyHealthGrowth: 1.17
+  enemyDamageGrowth: 1.13
+  cycleDifficultyMultiplier: 1.6
+  partDatabase: {fileID: 11400000, guid: 48bdf7440af43f244a92078d85dd6a11, type: 2}
+  enemyLootChance: 0.28
+  bossLootCount: 2
+  rarityWeights:
+  - 60
+  - 26
+  - 10
+  - 3.5
+  - 0.8
+  rarityShiftPerDungeon: 0.08
+  rarityStatMultiplier:
+  - 1
+  - 1.3
+  - 1.65
+  - 2.1
+  - 2.8
+  rarityExtraStats: 0000000001000000010000000200000003000000i
+  rarityPassiveCount: 0000000000000000010000000100000002000000i
+  itemPowerGrowth: 1.15
+  rarityColors:
+  - {r: 0.82, g: 0.78, b: 0.72, a: 1}
+  - {r: 0.45, g: 0.85, b: 0.45, a: 1}
+  - {r: 0.35, g: 0.62, b: 1, a: 1}
+  - {r: 0.75, g: 0.42, b: 1, a: 1}
+  - {r: 1, g: 0.66, b: 0.18, a: 1}
+  playerBase:
+    maxHealth: 60
+    damage: 8
+    armor: 0
+    moveSpeed: 5.5
+    attackSpeed: 1
+    critChance: 0.05
+    critDamage: 1.6
+    lifeSteal: 0
+    dashCooldown: 1.1
+    knockback: 4
+  rebirthBaseGrowth: 1.35
+  inventorySize: 24
+  rebirthKeepsInventory: 0
+  multiOfferingChance: 0.15
+  multiOfferingMax: 3
+  starterParts: []
+  playerPrefab: {fileID: 5159347533571279780, guid: f619aa09ceb85e24c980d60dd7af5a7f, type: 3}
+  villagerPrefab: {fileID: 4185192517418154510, guid: 6c63abb110403d749bf8ab4d0f1b97f7, type: 3}
+  lootPickupPrefab: {fileID: 8107154787030596667, guid: 89b41499a962ade4f800faf7aad9da74, type: 3}
+  playerBoltPrefab: {fileID: 5372605807658193814, guid: b068f908e3ae29f49801ca9d9d4ce801, type: 3}
+  enemyOrbPrefab: {fileID: 7320342709605661039, guid: 7533220e3370aae4ea610d45accdb8b1, type: 3}
+  uiRootPrefab: {fileID: 228773200345748726, guid: 10b9152d34b303d43b17a3087acca3cf, type: 3}
+  vfx: {fileID: 11400000, guid: 913521af9f288ae469f1c72d1a2a5685, type: 2}
+  audio: {fileID: 11400000, guid: 79f03c4a4d707a64eb8270b5894eff15, type: 2}
+  themes:
+  - {fileID: 11400000, guid: 00fa771f7f5f24d4ea090f3770d30eb7, type: 2}
+  - {fileID: 11400000, guid: 9de4a21773290e940ac96f3360a357d5, type: 2}
+  - {fileID: 11400000, guid: 834e34f76ec7fe34ba76f547c9bf1b20, type: 2}
+  - {fileID: 11400000, guid: d54156c557863474ca91000386739923, type: 2}
+  - {fileID: 11400000, guid: 4f73adab534f9c347851219ec4c2a44c, type: 2}
+  dungeonNames:
+  - "Les Combles Poussi\xE9reux"
+  - "L'Atelier Oubli\xE9"
+  - La Cave aux Bobines
+  - Le Grenier des Ficelles
+  - Les Coulisses Muettes
+  - La Fosse d'Orchestre
+  - "Le Th\xE9\xE2tre Englouti"
+  - Les Ateliers de Cire
+  - La Remise des Masques
+  - "Les Cintres Effondr\xE9s"
+  puppetNames:
+  - Brindille
+  - Copeau
+  - Bobine
+  - Ficelle
+  - Noisette
+  - Grelot
+  - Pampille
+  - Tilleul
+  - Mirliton
+  - Sciure
+  - Babiole
+  - Clochette
+  - Bouleau
+  - Galoche
+  - Pantoufle
+  - Rotin

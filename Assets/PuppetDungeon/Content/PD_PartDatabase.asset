@@ -1,0 +1,31 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 75d7edc8ab4905a9ae132ebd8ed52b9e, type: 3}
+  m_Name: PD_PartDatabase
+  m_EditorClassIdentifier: PuppetDungeon.Runtime::PuppetDungeon.PartDatabase
+  parts:
+  - {fileID: 11400000, guid: 9077a27deac48b347b22a36998411359, type: 2}
+  - {fileID: 11400000, guid: 41cb629717c37914f9b4187fe23013c8, type: 2}
+  - {fileID: 11400000, guid: 77f72733f19b9c04bbabc6dcad3b1b8e, type: 2}
+  - {fileID: 11400000, guid: f0c99fc8960c2db449d6abc93e9b1eff, type: 2}
+  - {fileID: 11400000, guid: d7e825378f2d9c041a53df6b7bb38fd5, type: 2}
+  - {fileID: 11400000, guid: 5675a139d90fcb74d834eda2b463a94a, type: 2}
+  - {fileID: 11400000, guid: cc5eb177215682848a20ed87e35b2c0b, type: 2}
+  - {fileID: 11400000, guid: 4520f6f054437cf4d9558cb3de98b582, type: 2}
+  - {fileID: 11400000, guid: 19bd55e2c3bf9024085c31bcf325f0c9, type: 2}
+  - {fileID: 11400000, guid: 277cdf32d3f92914c9031526e9e44e5c, type: 2}
+  - {fileID: 11400000, guid: 2529e05dc62de594d969f156b3d17f94, type: 2}
+  - {fileID: 11400000, guid: 57223264153de5140b85b3f270b96fb6, type: 2}
+  - {fileID: 11400000, guid: 373d25d591f2e5d459d7d3347b8658aa, type: 2}
+  - {fileID: 11400000, guid: 466477544e47b194aa69f9fd344f5591, type: 2}
+  - {fileID: 11400000, guid: 228484a4c8723a04d8adb5a5dcb12148, type: 2}
+  - {fileID: 11400000, guid: dbb453ea7bac31b4386d1a3f3593914c, type: 2}

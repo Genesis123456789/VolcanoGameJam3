@@ -1,0 +1,36 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9db6aca73c104161bb9cb159cf18c168, type: 3}
+  m_Name: PD_Part_Bras_Pantin_D
+  m_EditorClassIdentifier: PuppetDungeon.Runtime::PuppetDungeon.PartDefinition
+  displayName: Bras de Bois Tendre
+  slot: 3
+  icon: {fileID: 0}
+  visualPrefab: {fileID: 618786386932581460, guid: 222bc41fc8d1f0c46b01f836a9157f0b, type: 3}
+  replaceBaseSegments: 1
+  attackStyle: 0
+  baseStats:
+  - stat: 1
+    mode: 0
+    min: 2
+    max: 3
+  - stat: 4
+    mode: 0
+    min: 0.03
+    max: 0.06
+  possiblePassives: 020000000600000005000000i
+  minRarity: 0
+  maxRarity: 4
+  dropWeight: 1
+  minDungeon: 0
+  starterOnly: 0
+  lore: "Un bras sans pr\xE9tention, articul\xE9 au fil de lin. Il a port\xE9 des lanternes, des seaux d'eau, et une fois la main d'un enfant qu'il n'a jamais voulu l\xE2cher."

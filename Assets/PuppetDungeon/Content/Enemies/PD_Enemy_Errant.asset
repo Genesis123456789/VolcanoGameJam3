@@ -1,0 +1,36 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1698a0a21c1acf73115286c3bcb20ae4, type: 3}
+  m_Name: PD_Enemy_Errant
+  m_EditorClassIdentifier: PuppetDungeon.Runtime::PuppetDungeon.EnemyDefinition
+  displayName: Pantin errant
+  prefab: {fileID: 176119232214225086, guid: 91f5479e73d0d2b42b48e169b1a43638, type: 3}
+  behaviour: 0
+  maxHealth: 34
+  damage: 9
+  armor: 0
+  moveSpeed: 3.4
+  attackRange: 1.7
+  attackCooldown: 1.3
+  windup: 0.5
+  preferredDistance: 0
+  projectileSpeed: 9
+  projectilesPerShot: 1
+  projectileSpread: 0
+  chargeSpeed: 11
+  spawnWeight: 1.4
+  minDungeon: 0
+  isBoss: 0
+  visualScale: 1
+  lootRarityBonus: 0
+  lootChanceMultiplier: 1
+  bossTitle: 

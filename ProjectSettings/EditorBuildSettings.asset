@@ -6,6 +6,15 @@ EditorBuildSettings:
   serializedVersion: 2
   m_Scenes:
   - enabled: 1
+    path: Assets/PuppetDungeon/Generated/Scenes/PD_MainMenu.unity
+    guid: 76d846758112c95498b2d977925fa0d0
+  - enabled: 1
+    path: Assets/PuppetDungeon/Generated/Scenes/PD_Dungeon.unity
+    guid: 827f820d52ff8474983a3c411b5c570b
+  - enabled: 1
+    path: Assets/PuppetDungeon/Generated/Scenes/PD_Village.unity
+    guid: e3cd35ddfa84dc34d8a7fb235cb9252c
+  - enabled: 0
     path: Assets/Scenes/SampleScene.unity
     guid: 99c9720ab356a0642a771bea13969a05
   m_configObjects:

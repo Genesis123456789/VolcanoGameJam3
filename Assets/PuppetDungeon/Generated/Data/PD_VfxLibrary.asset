@@ -1,0 +1,26 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 576b936f626c895616a2383a9b0414d6, type: 3}
+  m_Name: PD_VfxLibrary
+  m_EditorClassIdentifier: PuppetDungeon.Runtime::PuppetDungeon.VfxLibrary
+  hitSpark: {fileID: 8316777385353287341, guid: d809ba3e0bf71534d9f13427786568ed, type: 3}
+  woodChips: {fileID: 5902064278960983260, guid: 7ca3108228d80694e9206b537c8db8cd, type: 3}
+  dust: {fileID: 4676293250209752032, guid: fa01e2d07333cbe409c3122a4014479b, type: 3}
+  doorSlam: {fileID: 1046920327686097498, guid: 4df845e7e62a74a46a9dcc7806c47236, type: 3}
+  lootBurst: {fileID: 3590260251875507772, guid: e10aed858604e9441aa1bea46df49b52, type: 3}
+  healPuff: {fileID: 2184790964072672131, guid: 6b6e87cdac07dbf46abe630c0c74363a, type: 3}
+  splinterNova: {fileID: 760980744038802098, guid: d7c8f68d14b06ef40bfbc721a1be32a2, type: 3}
+  swingTrail: {fileID: 3924504674932918738, guid: c2c33643008f1dd489e6a086d7a7a088, type: 3}
+  telegraphCircle: {fileID: 5079747129960038429, guid: 2f29e8386fc59a5489112b3bb5678964, type: 3}
+  safeZoneRing: {fileID: 3485922205202554195, guid: 7c114bc755f7d3f49868993494e28aa1, type: 3}
+  alertMark: {fileID: 9194104352786474586, guid: 06aff4c091830244290977c59bd3ce66, type: 3}
+  damageNumber: {fileID: 6932885714428287058, guid: 6263638c6626ce74480e72765fc4028d, type: 3}

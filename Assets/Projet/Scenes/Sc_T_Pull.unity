@@ -151,6 +151,7 @@ MonoBehaviour:
   _cardDropSpeed: 0
   lootTable: {fileID: 11400000, guid: f0b9be78edc9edf49a1b71b5b3d57f6c, type: 2}
   canvasPull: {fileID: 942678416}
+  isActive: 0
 --- !u!4 &37522857
 Transform:
   m_ObjectHideFlags: 0

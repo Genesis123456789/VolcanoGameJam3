@@ -1,0 +1,40 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9db6aca73c104161bb9cb159cf18c168, type: 3}
+  m_Name: PD_Part_Bras_Bouclier
+  m_EditorClassIdentifier: PuppetDungeon.Runtime::PuppetDungeon.PartDefinition
+  displayName: Bras-Bouclier du Rempart
+  slot: 3
+  icon: {fileID: 0}
+  visualPrefab: {fileID: 6587779109550718889, guid: 98ba613ae38c1f648999641e613aa16a, type: 3}
+  replaceBaseSegments: 1
+  attackStyle: 3
+  baseStats:
+  - stat: 2
+    mode: 0
+    min: 3
+    max: 5
+  - stat: 0
+    mode: 0
+    min: 10
+    max: 15
+  - stat: 9
+    mode: 0
+    min: 2
+    max: 3
+  possiblePassives: 0300000008000000i
+  minRarity: 0
+  maxRarity: 4
+  dropWeight: 1
+  minDungeon: 0
+  starterOnly: 0
+  lore: "Les Remparts portaient les d\xE9cors du grand spectacle. Quand le th\xE9\xE2tre a sombr\xE9, ils ont gard\xE9 leurs planches\u2026 et n'ont plus jamais recul\xE9 d'un pas."

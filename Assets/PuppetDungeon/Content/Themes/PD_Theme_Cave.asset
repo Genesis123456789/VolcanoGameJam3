@@ -1,0 +1,27 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 04699c36814550e6fb2c9d5bc57ef9ab, type: 3}
+  m_Name: PD_Theme_Cave
+  m_EditorClassIdentifier: PuppetDungeon.Runtime::PuppetDungeon.DungeonTheme
+  floorA: {r: 0.4, g: 0.44, b: 0.52, a: 1}
+  floorB: {r: 0.34, g: 0.38, b: 0.46, a: 1}
+  wall: {r: 0.22, g: 0.24, b: 0.32, a: 1}
+  wallTop: {r: 0.5, g: 0.55, b: 0.64, a: 1}
+  accent: {r: 0.35, g: 0.65, b: 0.95, a: 1}
+  lightColor: {r: 0.78, g: 0.86, b: 1, a: 1}
+  lightIntensity: 1
+  lanternColor: {r: 0.5, g: 0.75, b: 1, a: 1}
+  ambient: {r: 0.2, g: 0.23, b: 0.32, a: 1}
+  floorMaterial: {fileID: 2100000, guid: 946d0a94cf4c0f247a88c057b95a7ca8, type: 2}
+  wallMaterial: {fileID: 2100000, guid: 0e27fe3ae6de53a45acbc01b05ddaa24, type: 2}
+  wallTopMaterial: {fileID: 2100000, guid: 3761178b49140d04a96383ecf1f88ea1, type: 2}
+  propMaterial: {fileID: 2100000, guid: 0b2985cec879931439d28edc190f07a2, type: 2}

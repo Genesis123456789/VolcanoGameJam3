@@ -1,0 +1,36 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9db6aca73c104161bb9cb159cf18c168, type: 3}
+  m_Name: PD_Part_Buste_Chene
+  m_EditorClassIdentifier: PuppetDungeon.Runtime::PuppetDungeon.PartDefinition
+  displayName: "Buste de Ch\xEAne"
+  slot: 1
+  icon: {fileID: 0}
+  visualPrefab: {fileID: 1661047962159335040, guid: 8ee3f7669d3a8bc44866bc7eea3e17e1, type: 3}
+  replaceBaseSegments: 1
+  attackStyle: 0
+  baseStats:
+  - stat: 0
+    mode: 0
+    min: 16
+    max: 24
+  - stat: 2
+    mode: 0
+    min: 2
+    max: 3
+  possiblePassives: 030000000800000004000000i
+  minRarity: 0
+  maxRarity: 4
+  dropWeight: 1
+  minDungeon: 0
+  starterOnly: 0
+  lore: "Taill\xE9 dans le c\u0153ur d'un ch\xEAne foudroy\xE9. On dit que l'orage y dort encore, et qu'il gronde quand son porteur a peur."

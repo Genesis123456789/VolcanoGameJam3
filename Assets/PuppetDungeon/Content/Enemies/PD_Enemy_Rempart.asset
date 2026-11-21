@@ -1,0 +1,36 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1698a0a21c1acf73115286c3bcb20ae4, type: 3}
+  m_Name: PD_Enemy_Rempart
+  m_EditorClassIdentifier: PuppetDungeon.Runtime::PuppetDungeon.EnemyDefinition
+  displayName: Rempart sans visage
+  prefab: {fileID: 7174766908635958867, guid: 32ecb1bf248496b49804e8f7dd3ccde2, type: 3}
+  behaviour: 2
+  maxHealth: 58
+  damage: 12
+  armor: 2
+  moveSpeed: 2.6
+  attackRange: 1.6
+  attackCooldown: 2.6
+  windup: 0.8
+  preferredDistance: 0
+  projectileSpeed: 9
+  projectilesPerShot: 1
+  projectileSpread: 0
+  chargeSpeed: 12
+  spawnWeight: 0.9
+  minDungeon: 1
+  isBoss: 0
+  visualScale: 1
+  lootRarityBonus: 0
+  lootChanceMultiplier: 1
+  bossTitle: 
