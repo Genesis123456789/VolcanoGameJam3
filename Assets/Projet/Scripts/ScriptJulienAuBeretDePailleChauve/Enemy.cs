@@ -16,11 +16,14 @@ public class Enemy : MonoBehaviour
 
     [SerializeField] private Transform player;
 
+    private void Awake()
+    {
 
+    }
 
     void Start()
     {
-
+        SafeZoneTest.instance.AddEnemy(this);
     }
 
     void Update()
@@ -56,6 +59,14 @@ public class Enemy : MonoBehaviour
         canMove = false;
         canAttack = false;
         Debug.Log("Attack !", this);
+
+        var _player = player.GetComponent<PlayerController>();
+        if (_player && !_player.Isdead)
+        {
+            _player.TakeDamage((int)attackPower);
+        }
+
+
         yield return new WaitForSeconds(stunLockTime);
         canAttack = true;
         canMove = true;
@@ -64,6 +75,35 @@ public class Enemy : MonoBehaviour
     public void Death()
     {
         Debug.Log("Chuis mort !", this);
+        canAttack = false;
+        canMove = false;
+        StopAllCoroutines();
+        transform.Rotate(new Vector3(90, 0, 0));
+
+        if (Physics.Raycast(transform.position, Vector3.down, out RaycastHit hit, float.MaxValue))
+        {
+            Vector3 pos = transform.position;
+            float objectToFloor = hit.point.y + GetComponent<CapsuleCollider>().radius;
+            transform.position = new Vector3(pos.x, objectToFloor, pos.z);
+        }
+        SafeZoneTest.instance.RemoveEnemy(this);
+    }
+
+    public void SetAttackMode()
+    {
+        canMove = true;
+        canAttack = true;
+    }
+
+    public void TakeDamage(int damage)
+    {
+        if (hp <= damage)
+        {
+            hp = 0;
+            Death();
+            return;
+        }
+        hp -= damage;
     }
 
     private void OnDrawGizmos()
