@@ -13,3 +13,7 @@ MonoBehaviour:
   m_Name: Capacity_04
   m_EditorClassIdentifier: Assembly-CSharp::Capacity
   capacityName: Baguette04
+  hp: 30
+  speed: 40
+  endurance: 10
+  damage: 20
