@@ -8,10 +8,10 @@ public class Loot : MonoBehaviour
         tVisual.Rotate(0, 30f * Time.deltaTime,0);
     }
 
-
     public void LootLoot()
     {
         Debug.Log("Loot Récolté !", this);
-        Destroy(gameObject);
+        PlayerManager.instance.AddPartToInventory();
+        //Destroy(gameObject);
     }
 }

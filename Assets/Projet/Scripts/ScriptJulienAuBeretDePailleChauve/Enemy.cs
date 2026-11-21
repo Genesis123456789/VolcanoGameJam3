@@ -18,6 +18,7 @@ public class Enemy : MonoBehaviour
     [SerializeField] private bool canAttackPlayer;
     [SerializeField] private bool canShoot;
     [SerializeField] private bool isShooting;
+    [SerializeField] private bool isdead;
 
     [Header("Assign")]
 
@@ -96,6 +97,8 @@ public class Enemy : MonoBehaviour
 
     public void Death()
     {
+        if (isdead) return;
+        isdead = true;
         Debug.Log("Chuis mort !", this);
         canAttack = false;
         canMove = false;
@@ -145,7 +148,7 @@ public class Enemy : MonoBehaviour
         isShooting = true;
         canMove = false;
         canAttack = false;
-        var p = Instantiate(pfbProjectile, projectileSpawn);
+        var p = Instantiate(pfbProjectile);
         Vector3 dir = player.position - projectileSpawn.position;
         p.transform.forward = dir.normalized;
         yield return new WaitForSeconds(stunLockTime);

@@ -9,6 +9,9 @@ public class SafeZoneTest : MonoBehaviour
 
     [SerializeField] private bool canTriggerEnnemies = true;
 
+
+    [SerializeField] private Vector3 direction;
+
     private void Awake()
     {
         if (instance == null)
@@ -38,6 +41,11 @@ public class SafeZoneTest : MonoBehaviour
     {
         if (other.CompareTag("SafeZone"))
         {
+            var rb = GetComponent<Rigidbody>();
+
+            //if (rb.linearVelocity.normalized )
+
+
             if (canTriggerEnnemies)
             {
                 canTriggerEnnemies = false;
@@ -54,6 +62,11 @@ public class SafeZoneTest : MonoBehaviour
     public void SetSafeZone()
     {
         canTriggerEnnemies = true;
+    }
+
+    public void SetDirection(Vector3 direction)
+    {
+        direction = direction.normalized;
     }
 
     public void AddEnemy(Enemy enemy) => Enemies.Add(enemy);
