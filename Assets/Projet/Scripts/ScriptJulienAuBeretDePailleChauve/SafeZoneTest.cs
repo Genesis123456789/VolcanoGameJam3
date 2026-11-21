@@ -33,7 +33,7 @@ public class SafeZoneTest : MonoBehaviour
     {
         if (other.CompareTag("SafeZone"))
         {
-            Debug.Log(other.gameObject, this);
+            ///Debug.Log(other.gameObject, this);
         }
     }
 
@@ -49,7 +49,7 @@ public class SafeZoneTest : MonoBehaviour
             if (canTriggerEnnemies)
             {
                 canTriggerEnnemies = false;
-                Debug.Log("Enemies Attack !", this);
+                //Debug.Log("Enemies Attack !", this);
                 foreach (Enemy enemy in Enemies)
                 {
                     enemy.SetAttackMode();

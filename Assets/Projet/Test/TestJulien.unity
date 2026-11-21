@@ -370,14 +370,34 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 564fe69781fe66a47a7bea918ed659db, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerManager
+  inventoryLimit: 20
+  currentParts: 0
+  head: {fileID: 1107408378}
+  chest: {fileID: 2024579639}
+  leftArm: {fileID: 531344264}
+  rightArm: {fileID: 1196230211}
+  leftLeg: {fileID: 1234098699}
+  rightLeg: {fileID: 1974073315}
   canvasInventory: {fileID: 1062995085}
-  yes: {fileID: 456679647}
+  lParts: {fileID: 456679647}
+  wParts: {fileID: 1197568204}
   pfbPartInventory: {fileID: 6133897089718036095, guid: 4740c1b12d54663448b6e8653fb739fb, type: 3}
 --- !u!224 &456679647 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 2323737523822682077, guid: 0ffa32cf8efa9244b9f9ec332b22ad0a, type: 3}
   m_PrefabInstance: {fileID: 9054855853869085861}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &531344264 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 4590279989686434519, guid: 0ffa32cf8efa9244b9f9ec332b22ad0a, type: 3}
+  m_PrefabInstance: {fileID: 9054855853869085861}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b198178583b9ad84796b9a72e1c60ce5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PartSlot
 --- !u!1 &884912147
 GameObject:
   m_ObjectHideFlags: 0
@@ -729,6 +749,17 @@ CanvasGroup:
   m_CorrespondingSourceObject: {fileID: 6503139777960024569, guid: 0ffa32cf8efa9244b9f9ec332b22ad0a, type: 3}
   m_PrefabInstance: {fileID: 9054855853869085861}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &1107408378 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 5727885911244063418, guid: 0ffa32cf8efa9244b9f9ec332b22ad0a, type: 3}
+  m_PrefabInstance: {fileID: 9054855853869085861}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b198178583b9ad84796b9a72e1c60ce5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PartSlot
 --- !u!1 &1134023002
 GameObject:
   m_ObjectHideFlags: 0
@@ -841,6 +872,33 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1196230211 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 5011123328184722180, guid: 0ffa32cf8efa9244b9f9ec332b22ad0a, type: 3}
+  m_PrefabInstance: {fileID: 9054855853869085861}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b198178583b9ad84796b9a72e1c60ce5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PartSlot
+--- !u!224 &1197568204 stripped
+RectTransform:
+  m_CorrespondingSourceObject: {fileID: 2837449359547685816, guid: 0ffa32cf8efa9244b9f9ec332b22ad0a, type: 3}
+  m_PrefabInstance: {fileID: 9054855853869085861}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &1234098699 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 2516617518099891588, guid: 0ffa32cf8efa9244b9f9ec332b22ad0a, type: 3}
+  m_PrefabInstance: {fileID: 9054855853869085861}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b198178583b9ad84796b9a72e1c60ce5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PartSlot
 --- !u!1 &1238279198
 GameObject:
   m_ObjectHideFlags: 0
@@ -1007,6 +1065,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::PlayerController
   hp: 50
   moveSpeed: 5
+  rotationSpeed: 720
+  speedPerPoint: 0.1
   attackDuration: 0.3
   attackCooldown: 0.1
   attackRange: 0.8
@@ -1017,6 +1077,7 @@ MonoBehaviour:
     m_Bits: 8
   animator: {fileID: 0}
   AnimAttackZone: {fileID: 0}
+  marionnette: {fileID: 0}
 --- !u!114 &1755498466
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1224,6 +1285,28 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 968166ac3ebfc704b8d37164a1cd321c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::RoomManager
+--- !u!114 &1974073315 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 1256837095912482823, guid: 0ffa32cf8efa9244b9f9ec332b22ad0a, type: 3}
+  m_PrefabInstance: {fileID: 9054855853869085861}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b198178583b9ad84796b9a72e1c60ce5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PartSlot
+--- !u!114 &2024579639 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 1168728785560451500, guid: 0ffa32cf8efa9244b9f9ec332b22ad0a, type: 3}
+  m_PrefabInstance: {fileID: 9054855853869085861}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b198178583b9ad84796b9a72e1c60ce5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PartSlot
 --- !u!1 &2107509377
 GameObject:
   m_ObjectHideFlags: 0
