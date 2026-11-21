@@ -24,14 +24,9 @@ public class PullsManager : MonoBehaviour
 
     public void DoPull()
     {
-        if (isActive) yield break;
-
-        isActive = true;
-
         RarityRewardItem chosenCard = lootTable.GetRandomItem(lootTable);
 
         Debug.Log(chosenCard._Capacity.CapacityName);
-        
     }
 
     private IEnumerator DoRarityPull(RarityLootTable lootTable, int pullNumber = 1)
