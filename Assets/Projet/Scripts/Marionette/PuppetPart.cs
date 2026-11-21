@@ -5,7 +5,17 @@ public abstract class PuppetPart : MonoBehaviour
 {
 
     public PuppetPartEnum slot;
-    [SerializeField] public Dictionary<PuppetStatEnum, int> puppetBoosts;
+    public List<PuppetBoost> puppetBoosts = new List<PuppetBoost>();
 
-    
+
+}
+
+
+
+
+[System.Serializable]
+public struct PuppetBoost
+{
+    public PuppetStatEnum stat;
+    public int value;
 }
