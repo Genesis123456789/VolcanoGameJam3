@@ -3,18 +3,28 @@ using UnityEngine;
 
 public class Enemy : MonoBehaviour
 {
+    [Header("Stats")]
     [SerializeField] private float hp;
     [SerializeField] private float moveSpeed;
     [SerializeField] private float attackPower;
     [SerializeField] private float attackRange;
+    [SerializeField] private float attackShootThresold;
+    [SerializeField] private float attackOutofRange;
     [SerializeField] private float stunLockTime;
 
-
+    [Header("Bool")]
     [SerializeField] private bool canAttack;
     [SerializeField] private bool canMove;
     [SerializeField] private bool canAttackPlayer;
+    [SerializeField] private bool canShoot;
+    [SerializeField] private bool isShooting;
+
+    [Header("Assign")]
 
     [SerializeField] private Transform player;
+    [SerializeField] private GameObject pfbProjectile;
+    [SerializeField] private Transform projectileSpawn;
+    [SerializeField] private Loot pfbLoot;
 
     private void Awake()
     {
@@ -38,10 +48,22 @@ public class Enemy : MonoBehaviour
             Move(player);
         }
 
-        if (Vector3.Distance(transform.position, player.position) < attackRange && canAttack)
+        if (canAttack)
         {
-            Attack();
+            float distPlayerEnemy = Vector3.Distance(transform.position, player.position);
+
+
+            if (distPlayerEnemy <= attackOutofRange && distPlayerEnemy >= attackShootThresold && canShoot)
+            {
+                Shoot();
+            }
+            else if (distPlayerEnemy <= attackRange)
+            {
+                Attack();
+            }
         }
+
+
     }
 
     public void Move(Transform player)
@@ -87,6 +109,8 @@ public class Enemy : MonoBehaviour
             transform.position = new Vector3(pos.x, objectToFloor, pos.z);
         }
         SafeZoneTest.instance.RemoveEnemy(this);
+
+        if (pfbLoot) Instantiate(pfbLoot, transform.position + new Vector3(0,1.5f,0), Quaternion.identity);
     }
 
     public void SetAttackMode()
@@ -106,10 +130,43 @@ public class Enemy : MonoBehaviour
         hp -= damage;
     }
 
+    public void Shoot()
+    {
+        if (!projectileSpawn || !pfbProjectile)
+        {
+            Debug.LogWarning("Assgine prefabs project et projectile spawn !");
+            return;
+        }
+        StartCoroutine(ShootEnum());
+    }
+
+    IEnumerator ShootEnum()
+    {
+        isShooting = true;
+        canMove = false;
+        canAttack = false;
+        var p = Instantiate(pfbProjectile, projectileSpawn);
+        Vector3 dir = player.position - projectileSpawn.position;
+        p.transform.forward = dir.normalized;
+        yield return new WaitForSeconds(stunLockTime);
+        isShooting = false;
+        canMove = true;
+        canAttack = true;
+    }
+
     private void OnDrawGizmos()
     {
         if (canAttack)
         {
+            // Hors de porté
+            Gizmos.color = Color.gray;
+            Gizmos.DrawWireSphere(transform.position, attackOutofRange);
+
+            // Porté 
+            Gizmos.color = Color.yellow;
+            Gizmos.DrawWireSphere(transform.position, attackShootThresold);
+
+            // Porté d'attaque
             Gizmos.color = Color.red;
             Gizmos.DrawWireSphere(transform.position, attackRange);
         }
