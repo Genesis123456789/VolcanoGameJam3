@@ -411,11 +411,18 @@ MonoBehaviour:
   moveSpeed: 1
   attackPower: 10
   attackRange: 1
+  attackShootThresold: 0
+  attackOutofRange: 0
   stunLockTime: 1
   canAttack: 0
   canMove: 0
   canAttackPlayer: 0
+  canShoot: 0
+  isShooting: 0
   player: {fileID: 1755498464}
+  pfbProjectile: {fileID: 0}
+  projectileSpawn: {fileID: 0}
+  pfbLoot: {fileID: 0}
 --- !u!1 &1034060420
 GameObject:
   m_ObjectHideFlags: 0
@@ -595,6 +602,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ElGenerator
   pfbCubeToInstanciate: {fileID: 7299980607722781064, guid: 6421e70ed8a78bf49a58e96821b9e7f9, type: 3}
   pfbDoor: {fileID: 3737796809187142545, guid: 91f7c90168868eb498bb8e871037bcd5, type: 3}
+  player: {fileID: 1755498464}
 --- !u!4 &1306426404
 Transform:
   m_ObjectHideFlags: 0
@@ -627,7 +635,7 @@ GameObject:
   - component: {fileID: 1755498467}
   m_Layer: 0
   m_Name: Player
-  m_TagString: Untagged
+  m_TagString: Player
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -773,6 +781,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ec1dd25850ae14848b79aaf29b449972, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SafeZoneTest
+  canTriggerEnnemies: 1
 --- !u!1 &1783025128
 GameObject:
   m_ObjectHideFlags: 0
