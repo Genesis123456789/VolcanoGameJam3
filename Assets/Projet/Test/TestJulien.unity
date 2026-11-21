@@ -216,6 +216,37 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 50, y: -30, z: 0}
+--- !u!1 &87459639
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 87459640}
+  m_Layer: 3
+  m_Name: projectileSpawn
+  m_TagString: Untagged
+  m_Icon: {fileID: 7250588514170254948, guid: 0000000000000000d000000000000000, type: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &87459640
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 87459639}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 1.2, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 921885992}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &884912147
 GameObject:
   m_ObjectHideFlags: 0
@@ -378,10 +409,11 @@ Transform:
   m_GameObject: {fileID: 921885988}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -0.40259, y: 0.78303, z: 0.0884}
+  m_LocalPosition: {x: 0, y: 1, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
-  m_Children: []
+  m_Children:
+  - {fileID: 87459640}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &921885993
@@ -400,11 +432,18 @@ MonoBehaviour:
   moveSpeed: 1
   attackPower: 10
   attackRange: 1
+  attackShootThresold: 3
+  attackOutofRange: 5
   stunLockTime: 1
   canAttack: 0
   canMove: 0
   canAttackPlayer: 0
+  canShoot: 1
+  isShooting: 0
   player: {fileID: 1755498464}
+  pfbProjectile: {fileID: 262509044520933025, guid: 170b6a23e9128044aadb4039351fc0e2, type: 3}
+  projectileSpawn: {fileID: 87459640}
+  pfbLoot: {fileID: 3967156841544143256, guid: 7c3870e5b074949438404e38267aa8a0, type: 3}
 --- !u!1 &1034060420
 GameObject:
   m_ObjectHideFlags: 0
@@ -683,7 +722,7 @@ GameObject:
   - component: {fileID: 1755498467}
   m_Layer: 0
   m_Name: Player
-  m_TagString: Untagged
+  m_TagString: Player
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -802,7 +841,7 @@ MonoBehaviour:
   attackCooldown: 0.1
   attackRange: 0.8
   attackRadius: 0.5
-  attackDamage: 1
+  attackDamage: 10
   hittableLayers:
     serializedVersion: 2
     m_Bits: 8
@@ -822,6 +861,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Unity.InputSystem::UnityEngine.InputSystem.PlayerInput
   m_Actions: {fileID: -944628639613478452, guid: f8d2f68a91bc21543b7dd5a1eec4c1c7, type: 3}
   m_NotificationBehavior: 0
+  m_UIInputModule: {fileID: 0}
   m_DeviceLostEvent:
     m_PersistentCalls:
       m_Calls: []
@@ -876,6 +916,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ec1dd25850ae14848b79aaf29b449972, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SafeZoneTest
+  canTriggerEnnemies: 1
 --- !u!1 &1783025128
 GameObject:
   m_ObjectHideFlags: 0

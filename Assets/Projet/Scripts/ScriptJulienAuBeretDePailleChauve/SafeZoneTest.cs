@@ -7,6 +7,8 @@ public class SafeZoneTest : MonoBehaviour
 
     public static List<Enemy> Enemies = new List<Enemy>();
 
+    [SerializeField] private bool canTriggerEnnemies = true;
+
     private void Awake()
     {
         if (instance == null)
@@ -36,12 +38,22 @@ public class SafeZoneTest : MonoBehaviour
     {
         if (other.CompareTag("SafeZone"))
         {
-            Debug.Log("Enemies Attack !", this);
-            foreach (Enemy enemy in Enemies)
+            if (canTriggerEnnemies)
             {
-                enemy.SetAttackMode();
+                canTriggerEnnemies = false;
+                Debug.Log("Enemies Attack !", this);
+                foreach (Enemy enemy in Enemies)
+                {
+                    enemy.SetAttackMode();
+                }
             }
+
         }
+    }
+
+    public void SetSafeZone()
+    {
+        canTriggerEnnemies = true;
     }
 
     public void AddEnemy(Enemy enemy) => Enemies.Add(enemy);
