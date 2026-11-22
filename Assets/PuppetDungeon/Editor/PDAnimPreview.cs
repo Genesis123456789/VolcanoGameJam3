@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using UnityEditor;
@@ -21,23 +22,57 @@ namespace PuppetDungeon.EditorTools
 
         static PDAnimPreview()
         {
+            // Demande déposée dans Logs/pd_preview_request : traitée dès que l'éditeur est libre (hors Play).
+            EditorApplication.update += Poll;
+        }
+
+        private static double nextPoll;
+
+        private static void Poll()
+        {
+            if (EditorApplication.timeSinceStartup < nextPoll) return;
+            nextPoll = EditorApplication.timeSinceStartup + 2.0;
+            if (EditorApplication.isPlayingOrWillChangePlaymode || EditorApplication.isCompiling || EditorApplication.isUpdating) return;
             if (!File.Exists(Request)) return;
-            EditorApplication.delayCall += () =>
+            try { File.Delete(Request); } catch { return; }
+            LogModelPlacement();
+            PDAnimBaker.DebugLegs = true;
+            try
             {
-                if (EditorApplication.isPlayingOrWillChangePlaymode || !File.Exists(Request)) return;
-                try { File.Delete(Request); } catch { }
-                PDAnimBaker.DebugLegs = true;
-                try
+                var lib = PDAnimBaker.EnsureLibrary();
+                PDAnimBaker.BakeAll(lib);
+                var baseCtrl = PDAnimSets.CreateBaseController();
+                PDAnimSets.BuildSets(lib, baseCtrl, out _);
+                AssetDatabase.SaveAssets();
+            }
+            finally { PDAnimBaker.DebugLegs = false; }
+            RenderAll();
+        }
+
+        /// <summary>Diagnostic : position des maillages des modèles de pièces (espace d'import).</summary>
+        private static void LogModelPlacement()
+        {
+            var sb = new System.Text.StringBuilder("[PD-MODELS]");
+            foreach (var path in new[] { PDPaths.PartBody, PDPaths.PartLeg, PDPaths.PartArm, PDPaths.PartShield, PDPaths.PartSniper, PDPaths.PartSword, "Assets/Projet/Graphismes/rig_ff002.fbx" })
+            {
+                var go = AssetDatabase.LoadAssetAtPath<GameObject>(path);
+                if (go == null) { sb.Append("\n").Append(path).Append(" : introuvable"); continue; }
+                var inst = Object.Instantiate(go);
+                inst.hideFlags = HideFlags.HideAndDontSave;
+                inst.transform.SetPositionAndRotation(Vector3.zero, Quaternion.identity);
+                sb.Append("\n== ").Append(path).Append(" racine ").Append(go.transform.localPosition.ToString("F3")).Append(" ").Append(go.transform.localScale.ToString("F3"));
+                foreach (var r in inst.GetComponentsInChildren<Renderer>(true))
                 {
-                    var lib = PDAnimBaker.EnsureLibrary();
-                    PDAnimBaker.BakeAll(lib);
-                    var baseCtrl = PDAnimSets.CreateBaseController();
-                    PDAnimSets.BuildSets(lib, baseCtrl, out _);
-                    AssetDatabase.SaveAssets();
+                    var b = r.bounds;
+                    sb.Append($"\n  {r.name} : y {b.min.y:F3}..{b.max.y:F3}  x {b.min.x:F3}..{b.max.x:F3}  z {b.min.z:F3}..{b.max.z:F3}");
                 }
-                finally { PDAnimBaker.DebugLegs = false; }
-                RenderAll();
-            };
+                var anim = inst.GetComponentInChildren<Animator>();
+                foreach (var t in inst.GetComponentsInChildren<Transform>(true))
+                    if (t.name.EndsWith("UpLeg") || t.name.EndsWith("Leg") || t.name.EndsWith("Foot") || t.name.EndsWith("Hips"))
+                        sb.Append($"\n  os {t.name} : {t.position:F3}");
+                Object.DestroyImmediate(inst);
+            }
+            Debug.Log(sb.ToString());
         }
 
         private static void LogPuppetLegs(Animator animator, string label, AnimationClip clip)
@@ -83,6 +118,38 @@ namespace PuppetDungeon.EditorTools
                 v.gameObject.hideFlags = HideFlags.HideAndDontSave;
                 v.AttachTo(animator);
                 var roots = v.groups.Where(g => g != null && g.root != null).Select(g => g.root).ToList();
+                // Journal : position de chaque maillage de la pièce par rapport aux segments de base du même os.
+                var pr = inst.GetComponentInChildren<PuppetRig>(true);
+                foreach (var g in v.groups)
+                {
+                    if (g == null || g.root == null || g.root.parent == null) continue;
+                    var boneT = g.root.parent;
+                    string Range(IEnumerable<Renderer> rs)
+                    {
+                        var list = rs.Where(x => x != null).ToList();
+                        if (list.Count == 0) return "-";
+                        Vector3 mn = Vector3.positiveInfinity, mx = Vector3.negativeInfinity;
+                        foreach (var r in list)
+                        {
+                            var b = r.bounds;
+                            for (int k = 0; k < 8; k++)
+                            {
+                                var c = new Vector3((k & 1) == 0 ? b.min.x : b.max.x, (k & 2) == 0 ? b.min.y : b.max.y, (k & 4) == 0 ? b.min.z : b.max.z);
+                                var l = boneT.InverseTransformPoint(c);
+                                mn = Vector3.Min(mn, l); mx = Vector3.Max(mx, l);
+                            }
+                        }
+                        return mn.ToString("F2") + ".." + mx.ToString("F2");
+                    }
+                    var baseRs = pr != null ? pr.baseSegments.Where(x => x != null && x.bone == g.bone && x.renderer != null).Select(x => x.renderer) : Enumerable.Empty<Renderer>();
+                    Debug.Log($"[PD-PARTS] {prefabs[i].name} / {g.bone} : pièce {Range(g.root.GetComponentsInChildren<Renderer>(true))}  segments de base {Range(baseRs)}");
+                }
+                // Comme en jeu : les segments du pantin couverts par la pièce sont cachés.
+                var hidden = new List<Renderer>();
+                var puppet = inst.GetComponentInChildren<PuppetRig>(true);
+                if (puppet != null)
+                    foreach (var seg in puppet.baseSegments)
+                        if (seg != null && seg.renderer != null && seg.renderer.enabled && v.coveredBones.Contains(seg.bone)) { seg.renderer.enabled = false; hidden.Add(seg.renderer); }
                 for (int row = 0; row < rows.Length; row++)
                 {
                     var clip = lib.Get(rows[row].clip);
@@ -108,6 +175,7 @@ namespace PuppetDungeon.EditorTools
                     sheet.SetPixels(i * Cell, (rows.Length - 1 - row) * Cell, Cell, Cell, tmp.GetPixels());
                     if (clip != null) graph.Destroy();
                 }
+                foreach (var r in hidden) r.enabled = true;
                 foreach (var r in roots) Object.DestroyImmediate(r.gameObject);
                 Object.DestroyImmediate(v.gameObject);
             }

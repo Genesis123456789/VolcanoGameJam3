@@ -194,7 +194,65 @@ namespace PuppetDungeon.EditorTools
         private static ModeAlignment alignment;
 
         /// <summary>À appeler au début d'un setup pour recalculer l'alignement (modèles modifiés).</summary>
-        public static void ResetAlignment() => alignment = null;
+        public static void ResetAlignment() { alignment = null; referenceBounds = null; }
+
+        private static List<Bounds> referenceBounds;
+
+        /// <summary>Boîtes des maillages du corps de référence (mode_perso_en_vrais), dans l'espace d'import.</summary>
+        private static List<Bounds> ReferenceBounds()
+        {
+            if (referenceBounds != null) return referenceBounds;
+            referenceBounds = new List<Bounds>();
+            var refModel = PDPaths.Find<GameObject>(PDPaths.PartReference);
+            if (refModel == null) return referenceBounds;
+            var inst = Object.Instantiate(refModel);
+            inst.hideFlags = HideFlags.HideAndDontSave;
+            try
+            {
+                inst.transform.SetPositionAndRotation(Vector3.zero, Quaternion.identity);
+                foreach (var r in inst.GetComponentsInChildren<Renderer>(true)) referenceBounds.Add(r.bounds);
+            }
+            finally { Object.DestroyImmediate(inst); }
+            return referenceBounds;
+        }
+
+        private static float Overlap(float a0, float a1, float b0, float b1) => Mathf.Max(0f, Mathf.Min(a1, b1) - Mathf.Max(a0, b0));
+
+        /// <summary>
+        /// Décalage vertical qui ramène un modèle de pièce dans l'espace du corps de référence.
+        /// Les modèles d'armes/jambes (mode_shilder, mode_sniper, jambe, bras…) ont été exportés ~5 cm plus bas
+        /// que le corps : chaque maillage est comparé aux maillages du corps à la même place (vue de dessus)
+        /// et de même hauteur ; on garde les meilleures correspondances.
+        /// </summary>
+        public static float ModelShift(IEnumerable<Renderer> renderers, out int matches)
+        {
+            var refs = ReferenceBounds();
+            var pairs = new List<(float score, float dy)>();
+            foreach (var r in renderers)
+            {
+                if (r == null) continue;
+                var b = r.bounds;
+                foreach (var rb in refs)
+                {
+                    float ix = Overlap(b.min.x, b.max.x, rb.min.x, rb.max.x), iz = Overlap(b.min.z, b.max.z, rb.min.z, rb.max.z);
+                    float inter = ix * iz;
+                    float union = b.size.x * b.size.z + rb.size.x * rb.size.z - inter;
+                    if (union <= 1e-12f) continue;
+                    float iou = inter / union;
+                    if (iou < 0.3f) continue;
+                    float hy = Mathf.Max(b.size.y, rb.size.y);
+                    float sy = hy > 1e-9f ? 1f - Mathf.Abs(b.size.y - rb.size.y) / hy : 1f;
+                    if (sy < 0.6f) continue;
+                    pairs.Add((iou * sy, rb.center.y - b.center.y));
+                }
+            }
+            matches = 0;
+            if (pairs.Count == 0) return 0f;
+            float best = pairs.Max(p => p.score);
+            var kept = pairs.Where(p => p.score >= best * 0.85f).Select(p => p.dy).OrderBy(v => v).ToList();
+            matches = kept.Count;
+            return kept[kept.Count / 2];
+        }
 
         private static Vector3 RendererSize(Renderer r)
         {
@@ -336,6 +394,11 @@ namespace PuppetDungeon.EditorTools
                 var renderers = part.GetComponentsInChildren<Renderer>(true).Where(r => r.enabled && r.gameObject.activeInHierarchy).ToList();
                 // Aplatit la hiérarchie : chaque maillage est classé indépendamment de ses parents.
                 foreach (var r in renderers) r.transform.SetParent(part.transform, true);
+                // Recalage vertical du modèle sur le corps de référence (modèles exportés à une autre hauteur).
+                float shift = ModelShift(renderers, out int shiftMatches);
+                if (Mathf.Abs(shift) > 1e-4f)
+                    foreach (var r in renderers) r.transform.position += Vector3.up * shift;
+                Debug.Log($"[PuppetDungeon] {prefabName} : recalage vertical {shift * 100f:0.0} cm ({shiftMatches} correspondance(s)).");
                 foreach (var r in renderers)
                 {
                     // Le maillage est déplacé de l'espace « mode » vers l'espace du rig avant d'être classé.
@@ -404,8 +467,10 @@ namespace PuppetDungeon.EditorTools
                 PrepareBindPoses(rig);
                 float h = ModelHeight(rig);
                 var align = GetAlignment(rig, map, h);
-                foreach (var r in part.GetComponentsInChildren<Renderer>())
-                    result.Add(SlotOf(NearestBone(RendererCenter(r) + align.global, map, h)));
+                var rs = part.GetComponentsInChildren<Renderer>();
+                float shift = ModelShift(rs, out _);
+                foreach (var r in rs)
+                    result.Add(SlotOf(NearestBone(RendererCenter(r) + align.global + Vector3.up * shift, map, h)));
             }
             finally
             {

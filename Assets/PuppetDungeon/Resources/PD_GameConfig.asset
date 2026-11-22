@@ -101,42 +101,42 @@ MonoBehaviour:
       time: 2
       value: 0
       inSlope: 0
-      outSlope: 0.04
+      outSlope: 0.05
       tangentMode: 0
       weightedMode: 0
       inWeight: 0
       outWeight: 0
     - serializedVersion: 3
       time: 3
-      value: 0.04
-      inSlope: 0.04
-      outSlope: 0.026666665
+      value: 0.05
+      inSlope: 0.05
+      outSlope: 0.033333335
       tangentMode: 0
       weightedMode: 0
       inWeight: 0
       outWeight: 0
     - serializedVersion: 3
       time: 6
-      value: 0.12
-      inSlope: 0.026666665
-      outSlope: 0.020000001
+      value: 0.15
+      inSlope: 0.033333335
+      outSlope: 0.024999999
       tangentMode: 0
       weightedMode: 0
       inWeight: 0
       outWeight: 0
     - serializedVersion: 3
       time: 10
-      value: 0.2
-      inSlope: 0.020000001
-      outSlope: 0.013333333
+      value: 0.25
+      inSlope: 0.024999999
+      outSlope: 0.0133333355
       tangentMode: 0
       weightedMode: 0
       inWeight: 0
       outWeight: 0
     - serializedVersion: 3
       time: 16
-      value: 0.28
-      inSlope: 0.013333333
+      value: 0.33
+      inSlope: 0.0133333355
       outSlope: 0
       tangentMode: 0
       weightedMode: 0
@@ -164,13 +164,14 @@ MonoBehaviour:
   enemyDamageGrowth: 1.13
   cycleDifficultyMultiplier: 1.6
   earlyRampDungeons: 3
-  earlyEnemyHealth: 0.7
-  earlyEnemyDamage: 0.65
-  earlyEnemySlowness: 1.3
-  firstDungeonBossFreeRooms: 6
-  firstDungeonBossMultiplier: 0.35
-  firstDungeonExitGuardianChance: 0.15
-  balanceVersion: 2
+  earlyEnemyHealth: 0.78
+  earlyEnemyDamage: 0.72
+  earlyEnemySlowness: 1.2
+  firstDungeonBossFreeRooms: 4
+  firstDungeonBossMultiplier: 0.55
+  firstDungeonExitGuardianChance: 0.25
+  balanceVersion: 4
+  contentVersion: 1
   partDatabase: {fileID: 11400000, guid: 48bdf7440af43f244a92078d85dd6a11, type: 2}
   enemyLootChance: 0.28
   bossLootCount: 2
@@ -216,17 +217,17 @@ MonoBehaviour:
   currencyName: Bobines
   rarityCurrencyValue: 040000000a000000180000003c00000096000000i
   currencyPerItemLevel: 0.5
-  gachaCost: 20
-  gachaCostGrowthPerCycle: 1.25
+  gachaCost: 100
+  gachaCostGrowthPerCycle: 1.3
   gachaMultiCount: 5
-  gachaMultiDiscount: 0.1
+  gachaMultiDiscount: 0.15
   gachaRarityWeights:
-  - 45
-  - 32
-  - 16
-  - 6
-  - 1
-  gachaPity: 15
+  - 30
+  - 34
+  - 22
+  - 11
+  - 3
+  gachaPity: 10
   gachaFullBagRefund: 0.5
   defaultAnimations: {fileID: 11400000, guid: e0a2cbcc1f7789f49897bda81f204c7b, type: 2}
   styleAnimations:

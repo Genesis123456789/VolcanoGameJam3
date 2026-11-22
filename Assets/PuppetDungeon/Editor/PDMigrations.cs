@@ -56,6 +56,34 @@ namespace PuppetDungeon.EditorTools
                 Debug.Log("[PuppetDungeon] Équilibrage v2 appliqué (PV de base 75, premiers donjons adoucis, boss plus rares au donjon 1).");
                 changed = true;
             }
+            // Équilibrage v3 : boss un peu plus fréquents, début un peu moins facile.
+            if (cfg != null && cfg.balanceVersion < 3)
+            {
+                cfg.bossChanceByRooms = GameConfig.DefaultBossCurve();
+                cfg.earlyEnemyHealth = 0.78f;
+                cfg.earlyEnemyDamage = 0.72f;
+                cfg.earlyEnemySlowness = 1.2f;
+                cfg.firstDungeonBossFreeRooms = 4;
+                cfg.firstDungeonBossMultiplier = 0.55f;
+                cfg.firstDungeonExitGuardianChance = 0.25f;
+                cfg.balanceVersion = 3;
+                EditorUtility.SetDirty(cfg);
+                Debug.Log("[PuppetDungeon] Équilibrage v3 appliqué (boss un peu plus fréquents, début un peu plus exigeant).");
+                changed = true;
+            }
+            // Équilibrage v4 : gacha nettement plus cher (un tirage se mérite), mais chaque tirage rapporte mieux.
+            if (cfg != null && cfg.balanceVersion < 4)
+            {
+                cfg.gachaCost = 100;
+                cfg.gachaCostGrowthPerCycle = 1.3f;
+                cfg.gachaMultiDiscount = 0.15f;
+                cfg.gachaRarityWeights = new[] { 30f, 34f, 22f, 11f, 3f };
+                cfg.gachaPity = 10;
+                cfg.balanceVersion = 4;
+                EditorUtility.SetDirty(cfg);
+                Debug.Log($"[PuppetDungeon] Équilibrage v4 appliqué (gacha : {cfg.GachaCost(5)} {cfg.currencyName} le tirage, {cfg.GachaMultiCost(5)} les {cfg.gachaMultiCount}).");
+                changed = true;
+            }
 
             // Jeu d'animations de l'arbalète : tir « shoot » aussi à l'arrêt.
             var crossbow = AssetDatabase.LoadAssetAtPath<PuppetAnimationSet>(PDPaths.ContentAnimation + "/PD_Anim_Arbalete.asset");
@@ -74,9 +102,12 @@ namespace PuppetDungeon.EditorTools
 
             // Armes fixées à l'avant-bras (et non plus à la main) : on reconstruit leurs visuels sur place
             // (mêmes fichiers, donc les pièces et ennemis qui les utilisent restent branchés).
+            // + v1 : modèles d'armes et de jambes recalés en hauteur sur le corps (ils flottaient ~5 cm trop bas).
             var crossbowVisual = AssetDatabase.LoadAssetAtPath<PartVisual>(PDPaths.PartVisuals + "/PV_Arbalete_Guetteur.prefab");
-            if (crossbowVisual != null && crossbowVisual.groups.Exists(g => g != null && (g.bone == HumanBodyBones.RightHand || g.bone == HumanBodyBones.LeftHand)))
+            bool handMounted = crossbowVisual != null && crossbowVisual.groups.Exists(g => g != null && (g.bone == HumanBodyBones.RightHand || g.bone == HumanBodyBones.LeftHand));
+            if (handMounted || (cfg != null && cfg.contentVersion < 1))
             {
+                PDRigTools.ResetAlignment();
                 var m = new PDAssets.MaterialSet
                 {
                     partWood = AssetDatabase.LoadAssetAtPath<Material>(PDPaths.Materials + "/PD_PartWood.mat"),
@@ -88,7 +119,8 @@ namespace PuppetDungeon.EditorTools
                     PDContent.BuildDecoration(PDPaths.PartSword, "Epee", m.woodDark);
                     PDContent.BuildDecoration(PDPaths.PartSniper, "Arbalete", m.woodDark);
                     PDContent.BuildDecoration(PDPaths.PartShield, "Bouclier", m.woodDark);
-                    Debug.Log("[PuppetDungeon] Armes (arbalète, bouclier, lame) fixées à l'avant-bras.");
+                    Debug.Log("[PuppetDungeon] Visuels des pièces reconstruits (armes à l'avant-bras, modèles recalés en hauteur).");
+                    if (cfg != null) { cfg.contentVersion = 1; EditorUtility.SetDirty(cfg); }
                     changed = true;
                 }
             }

@@ -27,7 +27,7 @@ namespace PuppetDungeon
         [Tooltip("Chance (0 → 1) que la prochaine NOUVELLE salle soit la sortie, en fonction du nombre de salles déjà parcourues dans le donjon (axe X).")]
         public AnimationCurve exitChanceByRooms = Linear(new Vector2(0, 0), new Vector2(2, 0), new Vector2(3, 0.05f), new Vector2(5, 0.2f), new Vector2(8, 0.5f), new Vector2(10, 0.75f), new Vector2(12, 1f));
         [Tooltip("Chance (0 → 1) qu'une nouvelle salle soit une salle de boss, en fonction des salles parcourues (peu de salles = peu de chance).")]
-        public AnimationCurve bossChanceByRooms = Linear(new Vector2(0, 0), new Vector2(2, 0), new Vector2(3, 0.04f), new Vector2(6, 0.12f), new Vector2(10, 0.2f), new Vector2(16, 0.28f));
+        public AnimationCurve bossChanceByRooms = DefaultBossCurve();
         [Tooltip("Filet de sécurité : au-delà de ce nombre de salles parcourues sans sortie, la sortie est garantie.")]
         [Min(2)] public int maxRoomsBeforeExit = 14;
         [Tooltip("Une nouvelle sortie peut réapparaître si la précédente a été laissée derrière depuis autant de salles.")]
@@ -54,18 +54,19 @@ namespace PuppetDungeon
         [Tooltip("Nombre de donjons sur lesquels la difficulté remonte progressivement jusqu'à la normale (0 = désactivé).")]
         [Min(0)] public int earlyRampDungeons = 3;
         [Tooltip("PV des ennemis au donjon 1 (×), remonte jusqu'à ×1.")]
-        [Range(0.3f, 1f)] public float earlyEnemyHealth = 0.7f;
+        [Range(0.3f, 1f)] public float earlyEnemyHealth = 0.78f;
         [Tooltip("Dégâts des ennemis au donjon 1 (×), remonte jusqu'à ×1.")]
-        [Range(0.3f, 1f)] public float earlyEnemyDamage = 0.65f;
+        [Range(0.3f, 1f)] public float earlyEnemyDamage = 0.72f;
         [Tooltip("Préparation et temps de recharge des attaques ennemies au donjon 1 (× : plus lent = plus lisible).")]
-        [Range(1f, 2f)] public float earlyEnemySlowness = 1.3f;
+        [Range(1f, 2f)] public float earlyEnemySlowness = 1.2f;
         [Tooltip("Donjon 1 : aucune salle de boss avant ce nombre de salles parcourues.")]
-        [Min(0)] public int firstDungeonBossFreeRooms = 6;
+        [Min(0)] public int firstDungeonBossFreeRooms = 4;
         [Tooltip("Donjon 1 : la chance de salle de boss est multipliée par cette valeur.")]
-        [Range(0f, 1f)] public float firstDungeonBossMultiplier = 0.35f;
+        [Range(0f, 1f)] public float firstDungeonBossMultiplier = 0.55f;
         [Tooltip("Donjon 1 : chance que la sortie soit gardée par un boss (remonte jusqu'à « Exit Guardian Chance »).")]
-        [Range(0f, 1f)] public float firstDungeonExitGuardianChance = 0.15f;
+        [Range(0f, 1f)] public float firstDungeonExitGuardianChance = 0.25f;
         [HideInInspector] public int balanceVersion;
+        [HideInInspector] public int contentVersion;
 
         [Header("Butin")]
         public PartDatabase partDatabase;
@@ -112,17 +113,17 @@ namespace PuppetDungeon
         [Tooltip("Bobines supplémentaires par niveau d'objet de la pièce recyclée.")]
         public float currencyPerItemLevel = 0.5f;
         [Tooltip("Prix d'un tirage au premier village.")]
-        [Min(1)] public int gachaCost = 20;
+        [Min(1)] public int gachaCost = 100;
         [Tooltip("Multiplicateur du prix à chaque nouveau cycle de village.")]
-        public float gachaCostGrowthPerCycle = 1.25f;
+        public float gachaCostGrowthPerCycle = 1.3f;
         [Tooltip("Nombre de tirages du tirage multiple.")]
         [Min(2)] public int gachaMultiCount = 5;
         [Tooltip("Remise sur le tirage multiple (0.1 = 10 %).")]
-        [Range(0f, 0.5f)] public float gachaMultiDiscount = 0.1f;
+        [Range(0f, 0.5f)] public float gachaMultiDiscount = 0.15f;
         [Tooltip("Poids des raretés du gacha (Commun → Légendaire).")]
-        public float[] gachaRarityWeights = { 45f, 32f, 16f, 6f, 1f };
+        public float[] gachaRarityWeights = { 30f, 34f, 22f, 11f, 3f };
         [Tooltip("Garantie : après autant de tirages sans pièce Épique ou mieux, la suivante l'est (0 = désactivé).")]
-        [Min(0)] public int gachaPity = 15;
+        [Min(0)] public int gachaPity = 10;
         [Tooltip("Part du prix rendue si le sac est plein (la pièce est recyclée).")]
         [Range(0f, 1f)] public float gachaFullBagRefund = 0.5f;
 
@@ -168,6 +169,10 @@ namespace PuppetDungeon
         public string RarityHex(Rarity r) => "#" + ColorUtility.ToHtmlStringRGB(RarityColor(r));
 
         public int CycleOf(int dungeonIndex) => dungeonIndex / Mathf.Max(1, dungeonsPerVillage);
+
+        /// <summary>Chance de salle de boss selon les salles parcourues (réglage par défaut, équilibrage v3).</summary>
+        public static AnimationCurve DefaultBossCurve()
+            => Linear(new Vector2(0, 0), new Vector2(2, 0), new Vector2(3, 0.05f), new Vector2(6, 0.15f), new Vector2(10, 0.25f), new Vector2(16, 0.33f));
 
         /// <summary>0 au premier donjon → 1 une fois la prise en main terminée.</summary>
         public float EarlyRamp(int dungeonIndex)
