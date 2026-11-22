@@ -18,39 +18,70 @@ MonoBehaviour:
   sections:
   - title: Direction & game design
     people:
-    - name: "(Pr\xE9nom Nom)"
-      role: "(r\xF4le pr\xE9cis)"
-    lines: []
+    - name: Eric LUBRANO DI SCAMPAMORTE
+      role: Lead Game Designer
+    - name: Evan LEBON
+      role: Game Designer
+    - name: Julien PROMI
+      role: Game Designer
+    - name: Dimitri ROBERT
+      role: Assistant Game Design
+    lines:
+    - 
   - title: Programmation
     people:
-    - name: "(Pr\xE9nom Nom)"
-      role: "(r\xF4le pr\xE9cis)"
-    lines: []
+    - name: Eric LUBRANO DI SCAMPAMORTE
+      role: Lead Programmeur
+    - name: Claude Opus 5.5
+      role: System & Gameplay Programmeur
+    - name: Julien PROMI
+      role: System & Gameplay Programmeur
+    - name: Evan LEBON
+      role: System & Gameplay Programmeur
+    lines:
+    - 
   - title: "Mod\xE9lisation, rig & animation"
     people:
-    - name: "(Pr\xE9nom Nom)"
-      role: "(r\xF4le pr\xE9cis)"
-    lines: []
+    - name: Dimitri ROBERT
+      role: Animateur 3D
+    - name: Dimitri ROBERT
+      role: "Mod\xE9lisateur 3D"
+    - name: Dimitri ROBERT
+      role: Rigging
+    lines:
+    - 
   - title: Interface & illustrations
     people:
-    - name: "(Pr\xE9nom Nom)"
-      role: "(r\xF4le pr\xE9cis)"
-    lines: []
+    - name: Anthony VENER
+      role: UI Designer
+    - name: "P\xE9n\xE9lope VALLA"
+      role: UI Designer
+    - name: Dimitri ROBERT
+      role: Logo Designer
+    lines:
+    - 
   - title: Musique & sons
     people:
-    - name: "(Pr\xE9nom Nom)"
-      role: "(r\xF4le pr\xE9cis)"
-    lines: []
+    - name: Tristan LAURENT
+      role: Compositeur
+    - name: Tristan LAURENT
+      role: Sound Designer
+    - name: Claude Opus 5.5
+      role: Sound Designer
+    lines:
+    - 
   - title: Outils
-    people: []
+    people:
+    - name: 'Unity '
+      role: 'Moteur de Jeu '
+    - name: Claude
+      role: "IA pour le d\xE9veloppement"
+    - name: Maya
+      role: "Mod\xE9lisation 3D, Animation 3D et Rig"
+    - name: BandLab
+      role: Composition & Sound Design
     lines:
-    - "Unity 6 \u2022 Universal Render Pipeline \u2022 Input System \u2022 TextMeshPro"
-    - "Assistance au d\xE9veloppement : Claude (Anthropic)"
-  - title: Remerciements
-    people: []
-    lines:
-    - "Toute l'\xE9quipe de la Volcano Game Jam"
-    - Et vous, qui tirez encore nos fils.
+    - 
   closing: "Merci d'avoir jou\xE9 !"
   scrollSpeed: 70
   music: {fileID: 0}
