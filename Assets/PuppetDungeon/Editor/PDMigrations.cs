@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.IO;
 using UnityEditor;
 using UnityEngine;
@@ -46,22 +47,45 @@ namespace PuppetDungeon.EditorTools
                 changed = true;
             }
 
-            // Crédits : les sections encore vides « (votre nom ici) » deviennent une section Équipe (nom + rôle).
-            if (credits != null && credits.sections != null && !credits.sections.Exists(s => s != null && s.people != null && s.people.Count > 0))
+            // Crédits : chaque catégorie (gros titre) liste ses personnes avec leur rôle précis.
+            // Les catégories encore vides « (votre nom ici) », ou la section « Équipe » d'exemple, sont converties.
+            if (credits != null && credits.sections != null)
             {
-                bool Placeholder(CreditsData.Section s) => s != null && (s.people == null || s.people.Count == 0) && s.lines != null && s.lines.Count > 0
-                                                           && s.lines.TrueForAll(l => l != null && l.Contains("votre nom ici"));
-                int first = credits.sections.FindIndex(Placeholder);
-                if (first >= 0)
+                bool PlaceholderLines(CreditsData.Section s) => s != null && (s.people == null || s.people.Count == 0) && s.lines != null && s.lines.Count > 0
+                                                                && s.lines.TrueForAll(l => l != null && l.Contains("votre nom ici"));
+                bool PlaceholderTeam(CreditsData.Section s) => s != null && s.title == "Équipe" && s.people != null && s.people.Count > 0
+                                                               && s.people.TrueForAll(p => p != null && p.name == "(Prénom Nom)");
+                bool converted = false;
+                for (int i = 0; i < credits.sections.Count; i++)
                 {
-                    var team = PDContent.DefaultTeam();
-                    team.people.Clear();
-                    foreach (var s in credits.sections.FindAll(Placeholder))
-                        team.people.Add(new CreditsData.Person { name = "(Prénom Nom)", role = s.title });
-                    credits.sections.RemoveAll(Placeholder);
-                    credits.sections.Insert(Mathf.Min(first, credits.sections.Count), team);
+                    var s = credits.sections[i];
+                    if (PlaceholderLines(s))
+                    {
+                        s.people = new List<CreditsData.Person> { new CreditsData.Person { name = "(Prénom Nom)", role = "(rôle précis)" } };
+                        s.lines = new List<string>();
+                        converted = true;
+                    }
+                    else if (PlaceholderTeam(s))
+                    {
+                        // Une catégorie par rôle de l'exemple, chacune avec une personne à renseigner.
+                        var cats = new List<CreditsData.Section>();
+                        foreach (var p in s.people)
+                            cats.Add(new CreditsData.Section
+                            {
+                                title = string.IsNullOrWhiteSpace(p.role) ? "Équipe" : p.role,
+                                people = new List<CreditsData.Person> { new CreditsData.Person { name = "(Prénom Nom)", role = "(rôle précis)" } },
+                                lines = new List<string>(),
+                            });
+                        credits.sections.RemoveAt(i);
+                        credits.sections.InsertRange(i, cats);
+                        i += cats.Count - 1;
+                        converted = true;
+                    }
+                }
+                if (converted)
+                {
                     EditorUtility.SetDirty(credits);
-                    Debug.Log("[PuppetDungeon] Crédits : section « Équipe » avec un rôle par personne (Content/PD_Credits.asset).");
+                    Debug.Log("[PuppetDungeon] Crédits : catégories conservées, avec nom + rôle précis par personne (Content/PD_Credits.asset).");
                     changed = true;
                 }
             }

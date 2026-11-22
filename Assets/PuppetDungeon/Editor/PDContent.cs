@@ -369,19 +369,24 @@ namespace PuppetDungeon.EditorTools
 
         // ------------------------------------------------------------------ Crédits
 
-        /// <summary>Section « Équipe » d'exemple : un nom et son rôle par personne (à remplacer).</summary>
-        public static CreditsData.Section DefaultTeam() => new CreditsData.Section
+        /// <summary>Catégories d'exemple (gros titres) avec, dans chacune, une personne et son rôle précis à remplacer.</summary>
+        public static List<CreditsData.Section> DefaultTeamSections()
         {
-            title = "Équipe",
-            people = new List<CreditsData.Person>
+            CreditsData.Section S(string title) => new CreditsData.Section
             {
-                new CreditsData.Person { name = "(Prénom Nom)", role = "Direction & game design" },
-                new CreditsData.Person { name = "(Prénom Nom)", role = "Programmation" },
-                new CreditsData.Person { name = "(Prénom Nom)", role = "Modélisation, rig & animation" },
-                new CreditsData.Person { name = "(Prénom Nom)", role = "Interface & illustrations" },
-                new CreditsData.Person { name = "(Prénom Nom)", role = "Musique & sons" },
-            },
-        };
+                title = title,
+                people = new List<CreditsData.Person> { new CreditsData.Person { name = "(Prénom Nom)", role = "(rôle précis)" } },
+                lines = new List<string>(),
+            };
+            return new List<CreditsData.Section>
+            {
+                S("Direction & game design"),
+                S("Programmation"),
+                S("Modélisation, rig & animation"),
+                S("Interface & illustrations"),
+                S("Musique & sons"),
+            };
+        }
 
         /// <summary>Crédits par défaut (à compléter dans Content/PD_Credits.asset — conservés ensuite).</summary>
         public static CreditsData BuildCredits()
@@ -391,12 +396,12 @@ namespace PuppetDungeon.EditorTools
             c = PDPaths.LoadOrCreate<CreditsData>(PDPaths.Credits);
             c.gameTitle = GameInfo.Title;
             c.subtitle = "Volcano Game Jam 3";
-            c.sections = new List<CreditsData.Section>
+            c.sections = DefaultTeamSections();
+            c.sections.AddRange(new List<CreditsData.Section>
             {
-                DefaultTeam(),
                 new CreditsData.Section { title = "Outils", lines = new List<string> { "Unity 6 • Universal Render Pipeline • Input System • TextMeshPro", "Assistance au développement : Claude (Anthropic)" } },
                 new CreditsData.Section { title = "Remerciements", lines = new List<string> { "Toute l'équipe de la Volcano Game Jam", "Et vous, qui tirez encore nos fils." } },
-            };
+            });
             c.closing = "Merci d'avoir joué !";
             EditorUtility.SetDirty(c);
             return c;

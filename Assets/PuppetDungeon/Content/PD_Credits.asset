@@ -16,18 +16,30 @@ MonoBehaviour:
   gameTitle: Puppet Dungeon
   subtitle: Volcano Game Jam 3
   sections:
-  - title: "\xC9quipe"
+  - title: Direction & game design
     people:
     - name: "(Pr\xE9nom Nom)"
-      role: Direction & game design
+      role: "(r\xF4le pr\xE9cis)"
+    lines: []
+  - title: Programmation
+    people:
     - name: "(Pr\xE9nom Nom)"
-      role: Programmation
+      role: "(r\xF4le pr\xE9cis)"
+    lines: []
+  - title: "Mod\xE9lisation, rig & animation"
+    people:
     - name: "(Pr\xE9nom Nom)"
-      role: "Mod\xE9lisation, rig & animation"
+      role: "(r\xF4le pr\xE9cis)"
+    lines: []
+  - title: Interface & illustrations
+    people:
     - name: "(Pr\xE9nom Nom)"
-      role: Interface & illustrations
+      role: "(r\xF4le pr\xE9cis)"
+    lines: []
+  - title: Musique & sons
+    people:
     - name: "(Pr\xE9nom Nom)"
-      role: Musique & sons
+      role: "(r\xF4le pr\xE9cis)"
     lines: []
   - title: Outils
     people: []
