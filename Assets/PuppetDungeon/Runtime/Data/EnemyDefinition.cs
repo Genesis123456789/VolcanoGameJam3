@@ -9,6 +9,8 @@ namespace PuppetDungeon
     {
         public string displayName = "Pantin errant";
         public EnemyController prefab;
+        [Tooltip("Jeu d'animations (attaques propres à son arme). Vide = jeu par défaut.")]
+        public PuppetAnimationSet animations;
         public EnemyBehaviour behaviour = EnemyBehaviour.Chaser;
 
         [Header("Stats (donjon 0)")]

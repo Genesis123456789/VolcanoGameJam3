@@ -15,6 +15,29 @@ namespace PuppetDungeon
         public bool IsOpen { get; private set; }
         protected CanvasGroup group;
         private Coroutine anim;
+        private GameObject selectionBeforeOpen;
+
+        private static readonly System.Collections.Generic.List<UIPanel> openPanels = new System.Collections.Generic.List<UIPanel>();
+
+        internal static void ResetStatics() => openPanels.Clear();
+
+        /// <summary>Panneau ouvert le plus récent (celui qui reçoit la manette).</summary>
+        public static UIPanel Top
+        {
+            get
+            {
+                for (int i = openPanels.Count - 1; i >= 0; i--)
+                {
+                    var p = openPanels[i];
+                    if (p == null || !p.IsOpen || !p.isActiveAndEnabled) { openPanels.RemoveAt(i); continue; }
+                    return p;
+                }
+                return null;
+            }
+        }
+
+        /// <summary>Le bouton Retour de la manette (B) ferme ce panneau.</summary>
+        public virtual bool CloseOnCancel => true;
 
         protected virtual void Awake()
         {
@@ -27,10 +50,14 @@ namespace PuppetDungeon
         {
             if (IsOpen) return;
             IsOpen = true;
+            selectionBeforeOpen = EventSystem.current != null ? EventSystem.current.currentSelectedGameObject : null;
+            openPanels.Remove(this);
+            openPanels.Add(this);
             gameObject.SetActive(true);
             SetVisible(true, false);
             AudioManager.Sfx(l => l.uiClick, 0.6f, 0.9f);
             if (firstSelected != null && EventSystem.current != null) EventSystem.current.SetSelectedGameObject(firstSelected);
+            GamepadUI.Ensure();
             OnOpened();
         }
 
@@ -38,9 +65,47 @@ namespace PuppetDungeon
         {
             if (!IsOpen) return;
             IsOpen = false;
+            openPanels.Remove(this);
             SetVisible(false, false);
             AudioManager.Sfx(l => l.uiClick, 0.5f, 0.75f);
             OnClosed();
+            RestoreSelection();
+        }
+
+        private void OnDisable() => openPanels.Remove(this);
+
+        /// <summary>Rend la main manette à ce qui était sélectionné avant l'ouverture (ex : bouton Options du menu pause).</summary>
+        private void RestoreSelection()
+        {
+            var es = EventSystem.current;
+            if (es == null) return;
+            var cur = es.currentSelectedGameObject;
+            if (cur != null && cur.activeInHierarchy && !cur.transform.IsChildOf(transform)) return;
+            GameObject target = null;
+            if (IsUsable(selectionBeforeOpen)) target = selectionBeforeOpen;
+            else
+            {
+                var top = Top;
+                if (top != null) target = top.FirstUsable();
+            }
+            es.SetSelectedGameObject(target);
+            selectionBeforeOpen = null;
+        }
+
+        /// <summary>Premier élément sélectionnable du panneau (firstSelected, sinon le premier actif).</summary>
+        public GameObject FirstUsable()
+        {
+            if (IsUsable(firstSelected)) return firstSelected;
+            foreach (var s in GetComponentsInChildren<UnityEngine.UI.Selectable>())
+                if (IsUsable(s.gameObject)) return s.gameObject;
+            return null;
+        }
+
+        public static bool IsUsable(GameObject go)
+        {
+            if (go == null || !go.activeInHierarchy) return false;
+            var s = go.GetComponent<UnityEngine.UI.Selectable>();
+            return s == null || s.IsInteractable();
         }
 
         public void Toggle()

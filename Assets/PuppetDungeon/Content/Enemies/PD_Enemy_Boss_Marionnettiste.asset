@@ -14,6 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: PuppetDungeon.Runtime::PuppetDungeon.EnemyDefinition
   displayName: "La Marionnettiste d\xE9chue"
   prefab: {fileID: 4803965822021780339, guid: d7fed80476838e842a5e15e8d707c0c0, type: 3}
+  animations: {fileID: 11400000, guid: 804e4a83d9ae46247ba6c705184db314, type: 2}
   behaviour: 3
   maxHealth: 520
   damage: 18

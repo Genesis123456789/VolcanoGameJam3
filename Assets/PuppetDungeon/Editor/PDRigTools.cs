@@ -52,30 +52,12 @@ namespace PuppetDungeon.EditorTools
 
         // ------------------------------------------------------------------ Os
 
-        /// <summary>Os humanoïdes d'une instance du rig (via la description humaine de l'avatar).</summary>
+        /// <summary>
+        /// Os humanoïdes d'une instance du rig : convention de noms + correction gauche/droite
+        /// (indépendant de l'avatar importé, voir PDAvatarTools).
+        /// </summary>
         public static Dictionary<HumanBodyBones, Transform> MapBones(GameObject rigInstance)
-        {
-            var map = new Dictionary<HumanBodyBones, Transform>();
-            var animator = rigInstance.GetComponentInChildren<Animator>();
-            if (animator == null || animator.avatar == null || !animator.avatar.isHuman) return map;
-            var all = rigInstance.GetComponentsInChildren<Transform>(true);
-            foreach (var hb in animator.avatar.humanDescription.human)
-            {
-                string boneName = hb.humanName.Replace(" ", "");
-                if (!Enum.TryParse(boneName, out HumanBodyBones bone)) continue;
-                var t = all.FirstOrDefault(x => x.name == hb.boneName);
-                if (t != null) map[bone] = t;
-            }
-            if (map.Count == 0)
-            {
-                for (int i = 0; i < (int)HumanBodyBones.LastBone; i++)
-                {
-                    var t = animator.GetBoneTransform((HumanBodyBones)i);
-                    if (t != null) map[(HumanBodyBones)i] = t;
-                }
-            }
-            return map;
-        }
+            => PDAvatarTools.ResolveBones(rigInstance.transform);
 
         // ------------------------------------------------------------------ Pose de liaison
         // Le squelette du FBX n'est pas forcément dans la pose où les maillages ont été modélisés :
@@ -194,6 +176,130 @@ namespace PuppetDungeon.EditorTools
             return Mathf.Max(0.01f, b.size.y);
         }
 
+        // ------------------------------------------------------------------ Alignement « mode » → rig
+        // Les pièces (mode_sworlder, mode_shilder, mode_sniper, bras, jambe…) sont modélisées sur le
+        // corps de référence mode_perso_en_vrais (pieds au sol, y = 0), alors que le pantin riggé
+        // rig_ff002 est environ 5,2 unités plus haut (bras +5,5, tête +5,0). Sans compensation, chaque
+        // pièce s'accrochait ~5 unités sous son os : jambes décollées du genou, bras flottants.
+        // On mesure le décalage os par os en comparant les segments du corps de référence (nommés
+        // comme les os : RightForeArm, LeftUpLeg, Spine, Head…) à ceux du rig.
+
+        public class ModeAlignment
+        {
+            public Vector3 global;
+            public readonly Dictionary<HumanBodyBones, Vector3> perBone = new Dictionary<HumanBodyBones, Vector3>();
+            public Vector3 For(HumanBodyBones b) => perBone.TryGetValue(b, out var v) ? v : global;
+        }
+
+        private static ModeAlignment alignment;
+
+        /// <summary>À appeler au début d'un setup pour recalculer l'alignement (modèles modifiés).</summary>
+        public static void ResetAlignment() => alignment = null;
+
+        private static Vector3 RendererSize(Renderer r)
+        {
+            Mesh m = r is SkinnedMeshRenderer smr ? smr.sharedMesh : (r.GetComponent<MeshFilter>() != null ? r.GetComponent<MeshFilter>().sharedMesh : null);
+            if (m == null) return r.bounds.size;
+            var s = Vector3.Scale(m.bounds.size, r.transform.lossyScale);
+            return new Vector3(Mathf.Abs(s.x), Mathf.Abs(s.y), Mathf.Abs(s.z));
+        }
+
+        public static ModeAlignment GetAlignment(GameObject rig, Dictionary<HumanBodyBones, Transform> map, float height)
+        {
+            if (alignment != null) return alignment;
+            alignment = new ModeAlignment();
+            var refModel = PDPaths.Find<GameObject>(PDPaths.PartReference);
+            if (refModel == null)
+            {
+                Debug.LogWarning("[PuppetDungeon] Corps de référence introuvable (" + PDPaths.PartReference + ") : les pièces sont accrochées sans compensation.");
+                return alignment;
+            }
+            var refInst = Object.Instantiate(refModel);
+            refInst.hideFlags = HideFlags.HideAndDontSave;
+            try
+            {
+                refInst.transform.SetPositionAndRotation(Vector3.zero, Quaternion.identity);
+                // Segments du rig, rangés par os (pose de liaison)
+                var rigSegs = new List<(HumanBodyBones bone, Vector3 center, Vector3 size)>();
+                foreach (var r in rig.GetComponentsInChildren<Renderer>(true))
+                {
+                    if (IsBlocking(r.transform)) continue;
+                    var c = RendererCenter(r);
+                    rigSegs.Add((NearestBone(c, map, height), c, RendererSize(r)));
+                }
+                var offsets = new List<Vector3>();
+                var acc = new Dictionary<HumanBodyBones, List<Vector3>>();
+                foreach (var r in refInst.GetComponentsInChildren<Renderer>(true))
+                {
+                    if (!TryBoneFromName(r.transform, out var bone)) continue;
+                    Vector3 c = RendererCenter(r), size = RendererSize(r);
+                    // Côté géométrique (le personnage regarde +Z : sa gauche est en -X)
+                    bone = SideByPosition(bone, c.x);
+                    var cands = rigSegs.Where(x => x.bone == bone).ToList();
+                    if (cands.Count == 0) continue;
+                    var best = cands.OrderBy(x => (x.size - size).magnitude).First();
+                    if ((best.size - size).magnitude > Mathf.Max(0.3f * size.magnitude, 1e-4f)) continue;
+                    var off = best.center - c;
+                    offsets.Add(off);
+                    if (!acc.TryGetValue(bone, out var list)) acc[bone] = list = new List<Vector3>();
+                    list.Add(off);
+                }
+                if (offsets.Count == 0)
+                {
+                    Debug.LogWarning("[PuppetDungeon] Alignement des pièces : aucun segment commun entre le corps de référence et le rig.");
+                    return alignment;
+                }
+                alignment.global = new Vector3(Median(offsets.Select(o => o.x)), Median(offsets.Select(o => o.y)), Median(offsets.Select(o => o.z)));
+                foreach (var kv in acc)
+                {
+                    var avg = new Vector3(kv.Value.Average(v => v.x), kv.Value.Average(v => v.y), kv.Value.Average(v => v.z));
+                    // Un écart aberrant (segment remodelé) retombe sur le décalage global
+                    if ((avg - alignment.global).magnitude < height * 0.05f) alignment.perBone[kv.Key] = avg;
+                }
+                Debug.Log($"[PuppetDungeon] Alignement des pièces sur le rig : décalage global {alignment.global.ToString("F3")} ({offsets.Count} segments comparés, {alignment.perBone.Count} os affinés).");
+            }
+            finally { Object.DestroyImmediate(refInst); }
+            return alignment;
+        }
+
+        private static float Median(IEnumerable<float> values)
+        {
+            var v = values.OrderBy(x => x).ToList();
+            return v.Count == 0 ? 0f : v[v.Count / 2];
+        }
+
+        private static bool TryBoneFromName(Transform t, out HumanBodyBones bone)
+        {
+            foreach (var n in new[] { t.name, t.parent != null ? t.parent.name : "" })
+            {
+                string k = PDAvatarTools.Strip(n);
+                if (Enum.TryParse(k, out bone) && bone != HumanBodyBones.LastBone) return true;
+                switch (k)
+                {
+                    case "LeftArm": bone = HumanBodyBones.LeftUpperArm; return true;
+                    case "RightArm": bone = HumanBodyBones.RightUpperArm; return true;
+                    case "LeftForeArm": bone = HumanBodyBones.LeftLowerArm; return true;
+                    case "RightForeArm": bone = HumanBodyBones.RightLowerArm; return true;
+                    case "LeftUpLeg": bone = HumanBodyBones.LeftUpperLeg; return true;
+                    case "RightUpLeg": bone = HumanBodyBones.RightUpperLeg; return true;
+                    case "LeftLeg": bone = HumanBodyBones.LeftLowerLeg; return true;
+                    case "RightLeg": bone = HumanBodyBones.RightLowerLeg; return true;
+                    case "Spine1": bone = HumanBodyBones.Spine; return true;
+                }
+            }
+            bone = HumanBodyBones.Hips;
+            return false;
+        }
+
+        private static HumanBodyBones SideByPosition(HumanBodyBones b, float x)
+        {
+            string n = b.ToString();
+            bool left = n.StartsWith("Left"), right = n.StartsWith("Right");
+            if (left && x > 0f && Enum.TryParse("Right" + n.Substring(4), out HumanBodyBones r)) return r;
+            if (right && x < 0f && Enum.TryParse("Left" + n.Substring(5), out HumanBodyBones l)) return l;
+            return b;
+        }
+
         // ------------------------------------------------------------------ Visuels de pièces
 
         /// <summary>
@@ -201,7 +307,7 @@ namespace PuppetDungeon.EditorTools
         /// slot == null : toutes les pièces du modèle (décor d'ennemi). mirror : symétrie gauche/droite.
         /// Retourne null si aucun maillage ne correspond à l'emplacement demandé.
         /// </summary>
-        public static PartVisual BuildPartVisual(GameObject model, PuppetSlot? slot, bool mirror, string prefabName, Material material)
+        public static PartVisual BuildPartVisual(GameObject model, PuppetSlot? slot, bool mirror, string prefabName, Material material, bool mountOnForearm = false)
         {
             var rigModel = RigModel;
             if (rigModel == null || model == null) return null;
@@ -225,13 +331,23 @@ namespace PuppetDungeon.EditorTools
                 }
                 PrepareBindPoses(rig);
                 float height = ModelHeight(rig);
+                var align = GetAlignment(rig, map, height);
                 var groups = new Dictionary<HumanBodyBones, Transform>();
                 var renderers = part.GetComponentsInChildren<Renderer>(true).Where(r => r.enabled && r.gameObject.activeInHierarchy).ToList();
                 // Aplatit la hiérarchie : chaque maillage est classé indépendamment de ses parents.
                 foreach (var r in renderers) r.transform.SetParent(part.transform, true);
                 foreach (var r in renderers)
                 {
-                    var bone = NearestBone(RendererCenter(r), map, height);
+                    // Le maillage est déplacé de l'espace « mode » vers l'espace du rig avant d'être classé.
+                    var bone = NearestBone(RendererCenter(r) + align.global, map, height);
+                    var rigSpace = Matrix4x4.Translate(align.For(bone)) * r.transform.localToWorldMatrix;
+                    // Armes (arbalète, bouclier, lame) : fixées à l'avant-bras et non à la main. Dans les animations
+                    // Maya le poignet pivote fortement (jusqu'à 90° en visée) : l'arme suit ainsi l'axe du bras.
+                    if (mountOnForearm)
+                    {
+                        if (bone == HumanBodyBones.RightHand && map.ContainsKey(HumanBodyBones.RightLowerArm)) bone = HumanBodyBones.RightLowerArm;
+                        else if (bone == HumanBodyBones.LeftHand && map.ContainsKey(HumanBodyBones.LeftLowerArm)) bone = HumanBodyBones.LeftLowerArm;
+                    }
                     if (slot.HasValue && !SlotBones[slot.Value].Contains(bone)) continue;
                     if (!groups.TryGetValue(bone, out var g))
                     {
@@ -242,7 +358,7 @@ namespace PuppetDungeon.EditorTools
                     }
                     // Position relative à l'os en pose de liaison : à l'exécution le groupe est remis
                     // en identité sous l'os animé, la pièce suit donc parfaitement le membre.
-                    var rel = BindWorld(map[bone]).inverse * r.transform.localToWorldMatrix;
+                    var rel = BindWorld(map[bone]).inverse * rigSpace;
                     r.transform.SetParent(g, false);
                     ApplyLocalMatrix(r.transform, rel);
                     if (material != null) r.sharedMaterials = Enumerable.Repeat(material, Mathf.Max(1, r.sharedMaterials.Length)).ToArray();
@@ -287,8 +403,9 @@ namespace PuppetDungeon.EditorTools
                 if (map.Count == 0) return result;
                 PrepareBindPoses(rig);
                 float h = ModelHeight(rig);
+                var align = GetAlignment(rig, map, h);
                 foreach (var r in part.GetComponentsInChildren<Renderer>())
-                    result.Add(SlotOf(NearestBone(RendererCenter(r), map, h)));
+                    result.Add(SlotOf(NearestBone(RendererCenter(r) + align.global, map, h)));
             }
             finally
             {
@@ -301,7 +418,7 @@ namespace PuppetDungeon.EditorTools
         // ------------------------------------------------------------------ Pantins
 
         /// <summary>Crée la hiérarchie Visuel/Rig d'un pantin, mise à l'échelle et posée au sol.</summary>
-        public static PuppetRig BuildPuppetVisual(Transform parent, AnimatorController controller, Material wood, float height, int layer)
+        public static PuppetRig BuildPuppetVisual(Transform parent, PuppetAnimationSet animations, Material wood, float height, int layer)
         {
             var visual = new GameObject("Visuel");
             visual.transform.SetParent(parent, false);
@@ -330,7 +447,8 @@ namespace PuppetDungeon.EditorTools
 
             var animator = rig.GetComponent<Animator>();
             if (animator == null) animator = rig.AddComponent<Animator>();
-            animator.runtimeAnimatorController = controller;
+            animator.avatar = PDAvatarTools.PuppetAvatar;
+            animator.runtimeAnimatorController = animations != null ? animations.controller : null;
             animator.applyRootMotion = false;
             animator.cullingMode = AnimatorCullingMode.AlwaysAnimate;
 
@@ -339,25 +457,89 @@ namespace PuppetDungeon.EditorTools
             PrefabUtility.UnpackPrefabInstance(rig, PrefabUnpackMode.Completely, InteractionMode.AutomatedAction);
             var puppet = rig.AddComponent<PuppetRig>();
             puppet.animator = animator;
+            puppet.animationSet = animations;
             var map = MapBones(rig);
             PrepareBindPoses(rig);
             float h = ModelHeight(rig);
+            var rigid = MakeSegmentsRigid(rig);
+            var boneOf = map.GroupBy(kv => kv.Value).ToDictionary(g => g.Key, g => g.First().Key);
             foreach (var r in rig.GetComponentsInChildren<Renderer>(true))
             {
                 if (IsBlocking(r.transform)) { r.enabled = false; continue; }
                 if (!r.enabled) continue;
-                if (!(r is SkinnedMeshRenderer) && map.Count > 0)
+                HumanBodyBones bone = HumanBodyBones.Hips;
+                if (rigid.Contains(r))
                 {
-                    var rigidBone = NearestBone(RendererCenter(r), map, h);
-                    AttachRigid(r.transform, map[rigidBone]);
+                    // Déjà accroché à son os dominant : on retrouve l'os humanoïde (ou le plus proche ancêtre)
+                    for (var t = r.transform.parent; t != null; t = t.parent)
+                        if (boneOf.TryGetValue(t, out bone)) break;
                 }
+                else if (!(r is SkinnedMeshRenderer) && map.Count > 0)
+                {
+                    bone = NearestBone(RendererCenter(r), map, h);
+                    AttachRigid(r.transform, map[bone]);
+                }
+                else if (map.Count > 0) bone = NearestBone(RendererCenter(r), map, h);
                 if (wood != null) r.sharedMaterials = Enumerable.Repeat(wood, Mathf.Max(1, r.sharedMaterials.Length)).ToArray();
                 r.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.On;
-                var bone = map.Count > 0 ? NearestBone(RendererCenter(r), map, h) : HumanBodyBones.Hips;
                 puppet.baseSegments.Add(new PuppetRig.BaseSegment { renderer = r, bone = bone });
             }
             SetLayer(visual.transform, layer);
             return puppet;
+        }
+
+        /// <summary>
+        /// Le modèle riggé est lissé (« smooth bind ») : chaque pièce de bois est répartie sur 2 à 3 os
+        /// (ex. avant-bras : ForeArm 63 %, Arm 35 %, Hand 23 % ; main : 50/50), elle se plie et s'étire comme
+        /// du caoutchouc dès qu'une articulation tourne. Un pantin est fait de segments rigides : chaque
+        /// SkinnedMeshRenderer est remplacé par un maillage rigide accroché à son os dominant (en pose de
+        /// liaison). Ni le modèle ni les animations ne sont modifiés ; les billes d'articulation cachent les jointures.
+        /// </summary>
+        public static HashSet<Renderer> MakeSegmentsRigid(GameObject rig)
+        {
+            var created = new HashSet<Renderer>();
+            foreach (var smr in rig.GetComponentsInChildren<SkinnedMeshRenderer>(true).ToList())
+            {
+                var mesh = smr.sharedMesh;
+                if (mesh == null || IsBlocking(smr.transform)) continue;
+                var bone = DominantBone(smr);
+                if (bone == null) continue;
+                var go = new GameObject(smr.gameObject.name);
+                go.layer = smr.gameObject.layer;
+                go.transform.SetParent(bone, false);
+                ApplyLocalMatrix(go.transform, BindWorld(bone).inverse * smr.transform.localToWorldMatrix);
+                go.AddComponent<MeshFilter>().sharedMesh = mesh;
+                var mr = go.AddComponent<MeshRenderer>();
+                mr.sharedMaterials = smr.sharedMaterials;
+                mr.enabled = smr.enabled;
+                mr.shadowCastingMode = smr.shadowCastingMode;
+                created.Add(mr);
+                if (smr.transform.childCount == 0) Object.DestroyImmediate(smr.gameObject);
+                else Object.DestroyImmediate(smr);
+            }
+            return created;
+        }
+
+        /// <summary>Os qui porte le plus de poids ; à égalité (±15 %), l'os le plus profond (main plutôt qu'avant-bras).</summary>
+        private static Transform DominantBone(SkinnedMeshRenderer smr)
+        {
+            var bones = smr.bones;
+            var weights = smr.sharedMesh.boneWeights;
+            if (bones == null || bones.Length == 0) return smr.rootBone;
+            var sum = new float[bones.Length];
+            foreach (var w in weights)
+            {
+                if (w.boneIndex0 < sum.Length) sum[w.boneIndex0] += w.weight0;
+                if (w.boneIndex1 < sum.Length) sum[w.boneIndex1] += w.weight1;
+                if (w.boneIndex2 < sum.Length) sum[w.boneIndex2] += w.weight2;
+                if (w.boneIndex3 < sum.Length) sum[w.boneIndex3] += w.weight3;
+            }
+            int best = 0;
+            for (int i = 1; i < sum.Length; i++) if (sum[i] > sum[best]) best = i;
+            for (int i = 0; i < sum.Length; i++)
+                if (i != best && bones[i] != null && bones[best] != null && sum[i] >= sum[best] * 0.85f && bones[i].IsChildOf(bones[best]))
+                    best = i;
+            return bones[best] != null ? bones[best] : smr.rootBone;
         }
 
         private static bool IsBlocking(Transform t)

@@ -48,7 +48,7 @@ namespace PuppetDungeon.EditorTools
             var root = new GameObject("PD_Toast", typeof(RectTransform));
             var rt = (RectTransform)root.transform;
             rt.sizeDelta = new Vector2(560f, 64f);
-            Img(rt, PanelClean, new Color(1f, 1f, 1f, 0.95f), true, 4f, false);
+            Img(rt, PanelClean, Color.white, true, 4f, false);
             var t = Stretch(rt, "Texte", 18f);
             var label = Text(t, "Notification", 22f, Color.white, TextAlignmentOptions.MidlineLeft);
             root.AddComponent<CanvasGroup>();
@@ -107,6 +107,7 @@ namespace PuppetDungeon.EditorTools
             ui.gameOver = BuildGameOver(root);
             ui.offering = BuildOffering(root, cardPrefab);
             ui.dialog = BuildDialog(root);
+            ui.gacha = BuildGacha(root, cardPrefab);
             options.transform.SetAsLastSibling();
             ui.tooltip = BuildTooltip(root);
             ui.dragGhost = BuildDragGhost(root);
@@ -145,8 +146,10 @@ namespace PuppetDungeon.EditorTools
             var dashLabel = Stretch(dash, "Libellé");
             Text(dashLabel, "RUÉE", 12f, Ink, TextAlignmentOptions.Center, true);
 
-            var style = Rect(card, "Style", new Vector2(0f, 0f), new Vector2(1f, 0f), new Vector2(0f, 0f), new Vector2(40f, 18f), new Vector2(-80f, 34f));
+            var style = Rect(card, "Style", new Vector2(0f, 0f), new Vector2(1f, 0f), new Vector2(0f, 0f), new Vector2(40f, 18f), new Vector2(-330f, 34f));
             hud.styleLabel = Text(style, "Poing", 20f, Muted, TextAlignmentOptions.MidlineLeft);
+            var money = Rect(card, "Monnaie", new Vector2(1f, 0f), new Vector2(1f, 0f), new Vector2(1f, 0f), new Vector2(-40f, 18f), new Vector2(240f, 34f));
+            hud.currencyLabel = Text(money, "", 20f, Parchment, TextAlignmentOptions.MidlineRight);
 
             // Donjon (haut centre)
             var dl = Rect(hudRt, "Donjon", new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, -22f), new Vector2(900f, 46f));
@@ -172,7 +175,7 @@ namespace PuppetDungeon.EditorTools
             // Bannière
             var banner = Rect(root, "Bannière", new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0.5f, 0.5f), new Vector2(0f, -190f), new Vector2(1300f, 90f));
             var bannerBg = Stretch(banner, "Fond");
-            Img(bannerBg, GradientSprite, new Color(0f, 0f, 0f, 0.55f), false, 1f, false);
+            Img(bannerBg, GradientSprite, new Color(0f, 0f, 0f, 0.8f), false, 1f, false);
             ui.bannerGroup = Group(banner, 0f, false);
             var bt = Stretch(banner, "Texte");
             ui.bannerText = Text(bt, "", 44f, Parchment, TextAlignmentOptions.Center, true, true);
@@ -181,7 +184,7 @@ namespace PuppetDungeon.EditorTools
             var title = Stretch(root, "Titre");
             ui.titleGroup = Group(title, 0f, false);
             var strip = Center(title, "Bande", new Vector2(0f, 60f), new Vector2(2400f, 300f));
-            Img(strip, GradientSprite, new Color(0f, 0f, 0f, 0.75f), false, 1f, false);
+            Img(strip, GradientSprite, new Color(0f, 0f, 0f, 0.88f), false, 1f, false);
             ui.titleTop = Label(title, "Haut", "Donjon 1", 34f, Gold, new Vector2(0f, 150f), new Vector2(1400f, 50f), TextAlignmentOptions.Center, true, true);
             ui.titleMain = Label(title, "Nom", "Les Combles Poussiéreux", 76f, Parchment, new Vector2(0f, 75f), new Vector2(1600f, 100f), TextAlignmentOptions.Center, true, true);
             ui.titleSub = Label(title, "Sous-titre", "", 28f, Muted, new Vector2(0f, 0f), new Vector2(1400f, 50f), TextAlignmentOptions.Center, false, true);
@@ -216,7 +219,7 @@ namespace PuppetDungeon.EditorTools
         private static InventoryView BuildInventory(RectTransform root, ItemSlotView slotPrefab)
         {
             var screen = Stretch(root, "Inventaire");
-            Img(screen, White, new Color(0f, 0f, 0f, 0.62f));
+            Img(screen, White, new Color(0f, 0f, 0f, 0.82f));
             screen.gameObject.AddComponent<CanvasGroup>();
             var panel = Center(screen, "Panneau", new Vector2(0f, -10f), new Vector2(1640f, 900f));
             Img(panel, Panel, Color.white, true, 1.6f);
@@ -227,7 +230,7 @@ namespace PuppetDungeon.EditorTools
 
             // Zone du pantin
             var dollBg = Center(panel, "Fond du pantin", new Vector2(-440f, -10f), new Vector2(620f, 700f));
-            Img(dollBg, PanelClean, new Color(1f, 1f, 1f, 0.9f), true, 2.4f);
+            Img(dollBg, PanelClean, Color.white, true, 2.4f);
             var preview = Center(panel, "Aperçu", new Vector2(-440f, -10f), new Vector2(300f, 420f));
             var raw = preview.gameObject.AddComponent<RawImage>();
             raw.raycastTarget = false;
@@ -259,7 +262,7 @@ namespace PuppetDungeon.EditorTools
 
             // Stats
             var statsBg = Center(panel, "Stats", new Vector2(40f, -10f), new Vector2(330f, 700f));
-            Img(statsBg, PanelClean, new Color(1f, 1f, 1f, 0.9f), true, 3f);
+            Img(statsBg, PanelClean, Color.white, true, 3f);
             Label(statsBg, "Titre", "Statistiques", 28f, Gold, new Vector2(0f, 310f), new Vector2(300f, 40f), TextAlignmentOptions.Center, true);
             var st = Rect(statsBg, "Texte", new Vector2(0f, 0f), new Vector2(1f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, -70f), new Vector2(-50f, -100f));
             st.anchoredPosition = new Vector2(0f, -70f);
@@ -316,7 +319,7 @@ namespace PuppetDungeon.EditorTools
         private static PauseMenuView BuildPause(RectTransform root, OptionsView options)
         {
             var screen = Stretch(root, "Pause");
-            Img(screen, White, new Color(0f, 0f, 0f, 0.6f));
+            Img(screen, White, new Color(0f, 0f, 0f, 0.8f));
             screen.gameObject.AddComponent<CanvasGroup>();
             var panel = Center(screen, "Panneau", Vector2.zero, new Vector2(620f, 560f));
             Img(panel, Panel, Color.white, true, 1.8f);
@@ -352,7 +355,7 @@ namespace PuppetDungeon.EditorTools
         private static OfferingView BuildOffering(RectTransform root, OfferingCardView cardPrefab)
         {
             var screen = Stretch(root, "Offrande");
-            Img(screen, White, new Color(0f, 0f, 0f, 0.55f));
+            Img(screen, White, new Color(0f, 0f, 0f, 0.8f));
             screen.gameObject.AddComponent<CanvasGroup>();
             var panel = Center(screen, "Panneau", new Vector2(0f, 20f), new Vector2(1500f, 860f));
             Img(panel, Panel, Color.white, true, 1.6f);
@@ -361,12 +364,24 @@ namespace PuppetDungeon.EditorTools
             view.header = Label(panel, "Titre", "L'Offrande", 50f, Gold, new Vector2(0f, 360f), new Vector2(1200f, 70f), TextAlignmentOptions.Center, true, true);
             view.subHeader = Label(panel, "Sous-titre", "", 26f, Parchment, new Vector2(0f, 300f), new Vector2(1250f, 60f), TextAlignmentOptions.Center);
 
-            var scroll = Center(panel, "Défilement", new Vector2(0f, -10f), new Vector2(1380f, 540f));
+            view.recycleText = Label(panel, "Recyclage", "", 22f, Gold, new Vector2(0f, 250f), new Vector2(1250f, 40f), TextAlignmentOptions.Center);
+            view.grid = CardGrid(panel, new Vector2(0f, -30f), new Vector2(1380f, 500f));
+            view.cardPrefab = cardPrefab;
+
+            view.counter = Label(panel, "Compteur", "0 / 1", 28f, Muted, new Vector2(-420f, -340f), new Vector2(300f, 50f), TextAlignmentOptions.Center, true);
+            view.confirmButton = Btn(panel, "Offrir", "Offrir", new Vector2(250f, -340f), new Vector2(380f, 90f), 32f);
+            return view;
+        }
+
+        /// <summary>Grille de cartes défilante (offrande, gacha).</summary>
+        private static RectTransform CardGrid(RectTransform panel, Vector2 pos, Vector2 size)
+        {
+            var scroll = Center(panel, "Défilement", pos, size);
             var sr = scroll.gameObject.AddComponent<ScrollRect>();
             var viewport = Stretch(scroll, "Fenêtre");
             viewport.gameObject.AddComponent<RectMask2D>();
             Img(viewport, White, new Color(0f, 0f, 0f, 0.001f));
-            var content = Rect(viewport, "Contenu", new Vector2(0f, 1f), new Vector2(1f, 1f), new Vector2(0.5f, 1f), Vector2.zero, new Vector2(0f, 540f));
+            var content = Rect(viewport, "Contenu", new Vector2(0f, 1f), new Vector2(1f, 1f), new Vector2(0.5f, 1f), Vector2.zero, new Vector2(0f, size.y));
             var gl = content.gameObject.AddComponent<GridLayoutGroup>();
             gl.cellSize = new Vector2(330f, 140f);
             gl.spacing = new Vector2(16f, 16f);
@@ -381,11 +396,56 @@ namespace PuppetDungeon.EditorTools
             sr.horizontal = false;
             sr.vertical = true;
             sr.scrollSensitivity = 30f;
-            view.grid = content;
-            view.cardPrefab = cardPrefab;
+            return content;
+        }
 
-            view.counter = Label(panel, "Compteur", "0 / 1", 28f, Muted, new Vector2(-420f, -340f), new Vector2(300f, 50f), TextAlignmentOptions.Center, true);
-            view.confirmButton = Btn(panel, "Offrir", "Offrir", new Vector2(250f, -340f), new Vector2(380f, 90f), 32f);
+        private static GachaView BuildGacha(RectTransform root, OfferingCardView cardPrefab)
+        {
+            var screen = Stretch(root, "Gacha");
+            Img(screen, White, new Color(0f, 0f, 0f, 0.82f));
+            screen.gameObject.AddComponent<CanvasGroup>();
+            var panel = Center(screen, "Panneau", new Vector2(0f, 10f), new Vector2(1500f, 900f));
+            Img(panel, Panel, Color.white, true, 1.6f);
+            var view = screen.gameObject.AddComponent<GachaView>();
+            view.animatedRoot = panel;
+            view.title = Label(panel, "Titre", "La Tisseuse de Fils", 48f, Gold, new Vector2(0f, 385f), new Vector2(1200f, 66f), TextAlignmentOptions.Center, true, true);
+            view.flavor = Label(panel, "Accroche", "Recyclez vos vieilles pièces en bobines, la Tisseuse vous en tisse de nouvelles… au hasard.", 23f, Parchment, new Vector2(0f, 330f), new Vector2(1300f, 44f), TextAlignmentOptions.Center);
+            view.currencyText = Label(panel, "Monnaie", "0 Bobines", 32f, Parchment, new Vector2(-430f, 272f), new Vector2(460f, 50f), TextAlignmentOptions.MidlineLeft, true, true);
+            view.pityText = Label(panel, "Garantie", "", 22f, Muted, new Vector2(300f, 272f), new Vector2(720f, 44f), TextAlignmentOptions.MidlineRight);
+            view.oddsText = Label(panel, "Probabilités", "", 21f, Parchment, new Vector2(0f, 222f), new Vector2(1320f, 40f), TextAlignmentOptions.Center);
+            view.resultsGrid = CardGrid(panel, new Vector2(0f, -30f), new Vector2(1380f, 460f));
+            view.cardPrefab = cardPrefab;
+            view.resultHint = Label(panel, "Aide", "", 20f, Muted, new Vector2(0f, -285f), new Vector2(1300f, 36f), TextAlignmentOptions.Center);
+            view.pullOneButton = Btn(panel, "Tirer1", "Tirer x1", new Vector2(-430f, -360f), new Vector2(380f, 90f), 30f);
+            view.pullMultiButton = Btn(panel, "TirerX", "Tirer x5", new Vector2(0f, -360f), new Vector2(380f, 90f), 30f);
+            view.closeButton = Btn(panel, "Fermer", "Fermer", new Vector2(430f, -360f), new Vector2(300f, 90f), 30f);
+            view.pullOneLabel = view.pullOneButton.GetComponentInChildren<TextMeshProUGUI>();
+            view.pullMultiLabel = view.pullMultiButton.GetComponentInChildren<TextMeshProUGUI>();
+            view.firstSelected = view.pullOneButton.gameObject;
+            return view;
+        }
+
+        private static CreditsView BuildCredits(RectTransform root)
+        {
+            var screen = Stretch(root, "Crédits");
+            Img(screen, White, new Color(0f, 0f, 0f, 0.92f));
+            screen.gameObject.AddComponent<CanvasGroup>();
+            var panel = Center(screen, "Panneau", Vector2.zero, new Vector2(1100f, 940f));
+            Img(panel, Panel, Color.white, true, 1.6f);
+            var view = screen.gameObject.AddComponent<CreditsView>();
+            view.animatedRoot = panel;
+            var viewport = Center(panel, "Fenêtre", new Vector2(0f, 40f), new Vector2(960f, 700f));
+            viewport.gameObject.AddComponent<RectMask2D>();
+            var content = Rect(viewport, "Contenu", new Vector2(0f, 1f), new Vector2(1f, 1f), new Vector2(0.5f, 1f), Vector2.zero, new Vector2(0f, 2000f));
+            var body = Stretch(content, "Texte");
+            view.body = FlowText(Text(body, "", 30f, Parchment, TextAlignmentOptions.Top));
+            view.viewport = viewport;
+            view.content = content;
+            view.titleColor = Gold;
+            view.headingColor = Gold;
+            Label(panel, "Aide", "Espace / clic : accélérer   •   Échap : retour", 19f, Muted, new Vector2(0f, -340f), new Vector2(900f, 34f), TextAlignmentOptions.Center);
+            view.closeButton = Btn(panel, "Retour", "Retour", new Vector2(0f, -405f), new Vector2(300f, 80f));
+            view.firstSelected = view.closeButton.gameObject;
             return view;
         }
 
@@ -432,10 +492,10 @@ namespace PuppetDungeon.EditorTools
             var bar = Rect(panel, "Barre", Vector2.zero, Vector2.one, new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(0f, 6f));
             tip.rarityBar = Img(bar, White, Color.white, false, 1f, false);
             bar.gameObject.AddComponent<LayoutElement>().preferredHeight = 6f;
-            tip.title = Text(Rect(panel, "Nom", Vector2.zero, Vector2.one, new Vector2(0.5f, 0.5f), Vector2.zero, Vector2.zero), "Pièce", 28f, Color.white, TextAlignmentOptions.TopLeft, true);
-            tip.rarity = Text(Rect(panel, "Rareté", Vector2.zero, Vector2.one, new Vector2(0.5f, 0.5f), Vector2.zero, Vector2.zero), "COMMUN", 16f, Muted, TextAlignmentOptions.TopLeft, true);
-            tip.body = Text(Rect(panel, "Corps", Vector2.zero, Vector2.one, new Vector2(0.5f, 0.5f), Vector2.zero, Vector2.zero), "", 20f, Parchment, TextAlignmentOptions.TopLeft);
-            tip.compare = Text(Rect(panel, "Comparaison", Vector2.zero, Vector2.one, new Vector2(0.5f, 0.5f), Vector2.zero, Vector2.zero), "", 18f, Parchment, TextAlignmentOptions.TopLeft);
+            tip.title = FlowText(Text(Rect(panel, "Nom", Vector2.zero, Vector2.one, new Vector2(0.5f, 0.5f), Vector2.zero, Vector2.zero), "Pièce", 28f, Color.white, TextAlignmentOptions.TopLeft, true));
+            tip.rarity = FlowText(Text(Rect(panel, "Rareté", Vector2.zero, Vector2.one, new Vector2(0.5f, 0.5f), Vector2.zero, Vector2.zero), "COMMUN", 16f, Muted, TextAlignmentOptions.TopLeft, true));
+            tip.body = FlowText(Text(Rect(panel, "Corps", Vector2.zero, Vector2.one, new Vector2(0.5f, 0.5f), Vector2.zero, Vector2.zero), "", 20f, Parchment, TextAlignmentOptions.TopLeft));
+            tip.compare = FlowText(Text(Rect(panel, "Comparaison", Vector2.zero, Vector2.one, new Vector2(0.5f, 0.5f), Vector2.zero, Vector2.zero), "", 18f, Parchment, TextAlignmentOptions.TopLeft));
             return tip;
         }
 
@@ -469,13 +529,15 @@ namespace PuppetDungeon.EditorTools
             var titleRoot = Center(root, "Titre", new Vector2(0f, 250f), new Vector2(1300f, 260f));
             Img(titleRoot, Panel, Color.white, true, 1.8f, false);
             view.titleRoot = titleRoot;
-            view.title = Label(titleRoot, "Nom", "LES FILS DU PANTIN", 84f, Parchment, new Vector2(0f, 25f), new Vector2(1200f, 110f), TextAlignmentOptions.Center, true, true);
+            view.title = Label(titleRoot, "Nom", GameInfo.Title.ToUpperInvariant(), 84f, Parchment, new Vector2(0f, 25f), new Vector2(1200f, 110f), TextAlignmentOptions.Center, true, true);
             Label(titleRoot, "Sous-titre", "Un donjon de bois, de ficelles et de pièces détachées", 28f, Gold, new Vector2(0f, -55f), new Vector2(1200f, 50f), TextAlignmentOptions.Center, false, true);
 
-            view.playButton = Btn(root, "Jouer", "Nouvelle partie", new Vector2(0f, -40f), new Vector2(460f, 100f), 34f);
-            view.optionsButton = Btn(root, "Options", "Options", new Vector2(0f, -160f), new Vector2(460f, 100f), 34f);
-            view.quitButton = Btn(root, "Quitter", "Quitter", new Vector2(0f, -280f), new Vector2(460f, 100f), 34f);
+            view.playButton = Btn(root, "Jouer", "Nouvelle partie", new Vector2(0f, -20f), new Vector2(460f, 92f), 34f);
+            view.optionsButton = Btn(root, "Options", "Options", new Vector2(0f, -125f), new Vector2(460f, 92f), 34f);
+            view.creditsButton = Btn(root, "Crédits", "Crédits", new Vector2(0f, -230f), new Vector2(460f, 92f), 34f);
+            view.quitButton = Btn(root, "Quitter", "Quitter", new Vector2(0f, -335f), new Vector2(460f, 92f), 34f);
             view.options = BuildOptions(root);
+            view.credits = BuildCredits(root);
 
             var credit = Rect(root, "Crédit", new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(0f, 20f), new Vector2(1400f, 40f));
             Text(credit, "Volcano Game Jam 3", 20f, Muted, TextAlignmentOptions.Center, false, true);

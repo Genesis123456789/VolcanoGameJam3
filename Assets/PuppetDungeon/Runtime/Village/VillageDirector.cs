@@ -40,9 +40,15 @@ namespace PuppetDungeon
             "Les fils se tendent à nouveau. Ils ne me lâcheront pas, cette fois."
         };
 
+        [Header("Gacha")]
+        public string weaverName = "La Tisseuse de Fils";
+        [TextArea(2, 4)]
+        public string weaverGreeting = "Des bobines ? Donne-les-moi, je te tisse des membres neufs. Le hasard fait bien les choses… la plupart du temps.";
+
         private RoomController plaza;
         private VillagerNPC villager;
         private Interactable gate;
+        private Interactable weaver;
 
         private IEnumerator Start()
         {
@@ -65,6 +71,7 @@ namespace PuppetDungeon
             gate = VillageDecor.BuildGate(plaza, villageTheme);
             gate.interactable = false;
             gate.Interacted += () => { gate.interactable = false; GameManager.Instance.LeaveVillage(); };
+            weaver = SpawnWeaver(cfg, VillageDecor.BuildGachaStall(plaza, villageTheme));
             if (RoomCamera.Instance != null) RoomCamera.Instance.SnapTo(plaza);
 
             // Joueur brisé
@@ -119,6 +126,11 @@ namespace PuppetDungeon
             }
             chosen = chosen ?? new List<PartInstance>();
 
+            // Tout ce qui n'est pas offert est recyclé en monnaie pour le gacha (selon la rareté).
+            var recycled = inv.AllEquipped().Where(p => !chosen.Contains(p)).ToList();
+            if (!cfg.rebirthKeepsInventory) recycled.AddRange(inv.bag.Where(p => p != null && !chosen.Contains(p)));
+            int gained = Gacha.Recycle(recycled);
+
             yield return TransferRoutine(player, chosen, vName, vTint);
 
             if (ui != null && ui.dialog != null)
@@ -129,12 +141,55 @@ namespace PuppetDungeon
 
             player.Lock(false);
             gate.interactable = true;
+            if (weaver != null) weaver.interactable = true;
             if (ui != null)
             {
                 ui.Banner($"{vName} reprend le flambeau", new Color(1f, 0.85f, 0.5f));
                 ui.Toast($"Nouveau pantin : stats de base x{gm.Run.baseScale:0.00}", new Color(0.7f, 1f, 0.6f));
+                if (gained > 0) ui.Toast($"{recycled.Count} pièce(s) recyclée(s) : +{gained} {cfg.currencyName}", new Color(0.95f, 0.76f, 0.31f));
+                if (gm.Run.currency > 0) ui.Toast($"{weaverName} échange vos {cfg.currencyName} contre des pièces.", new Color(0.95f, 0.85f, 0.6f));
                 ui.Toast("La porte du nord mène aux donjons suivants.", new Color(0.9f, 0.85f, 0.75f));
             }
+        }
+
+        private Interactable SpawnWeaver(GameConfig cfg, Vector3 pos)
+        {
+            if (cfg.villagerPrefab == null) return null;
+            var go = Instantiate(cfg.villagerPrefab, pos, Quaternion.LookRotation(Vector3.back), transform);
+            go.name = "Tisseuse";
+            var npc = go.GetComponent<VillagerNPC>();
+            if (npc != null)
+            {
+                npc.villagerName = weaverName;
+                if (npc.rig != null)
+                {
+                    npc.rig.ApplyLoadout(null, cfg);
+                    npc.rig.SetWoodTint(new Color(0.55f, 0.4f, 0.62f));
+                }
+            }
+            var inter = go.AddComponent<Interactable>();
+            inter.prompt = $"{weaverName} (tirages de pièces)";
+            inter.radius = 2.3f;
+            inter.interactable = false;
+            bool greeted = false;
+            inter.Interacted += () => StartCoroutine(OpenGacha(() => greeted, v => greeted = v));
+            return inter;
+        }
+
+        private IEnumerator OpenGacha(System.Func<bool> greeted, System.Action<bool> setGreeted)
+        {
+            var ui = UIRoot.Instance;
+            if (ui == null || ui.gacha == null || ui.gacha.IsOpen) yield break;
+            var player = PlayerController.Instance;
+            if (!greeted() && ui.dialog != null)
+            {
+                setGreeted(true);
+                if (player != null) player.Lock(true);
+                yield return ui.dialog.Say(weaverName, weaverGreeting);
+                ui.dialog.Close();
+                if (player != null) player.Lock(false);
+            }
+            ui.gacha.Show(weaverName);
         }
 
         private VillagerNPC SpawnVillager(GameConfig cfg, Vector3 pos, string vName, Color tint)

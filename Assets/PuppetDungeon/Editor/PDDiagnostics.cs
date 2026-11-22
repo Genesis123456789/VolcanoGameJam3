@@ -4,11 +4,11 @@ using UnityEngine;
 
 namespace PuppetDungeon.EditorTools
 {
-    /// <summary>Diagnostic des avatars et clips (s'affiche une fois par session dans la Console, préfixe [PD-DIAG]).</summary>
+    /// <summary>Diagnostic des animations (préfixe [PD-DIAG] dans la Console) : clips cuits et avatar du joueur.</summary>
     [InitializeOnLoad]
     public static class PDDiagnostics
     {
-        private const string Key = "PD_Diag_v2";
+        private const string Key = "PD_Diag_v3";
 
         static PDDiagnostics()
         {
@@ -17,13 +17,22 @@ namespace PuppetDungeon.EditorTools
             EditorApplication.delayCall += Run;
         }
 
-        [MenuItem("Tools/Puppet Dungeon/Diagnostic des animations", priority = 30)]
+        [MenuItem("Tools/Puppet Dungeon/Animations/Diagnostic des animations", priority = 42)]
         public static void Run()
         {
-            Report(PDPaths.Rig);
-            Report(PDPaths.AnimWalk);
-            Report(PDPaths.AnimRun);
-            Report(PDPaths.AnimAttack);
+            var lib = AssetDatabase.LoadAssetAtPath<AnimationLibrary>(PDPaths.ContentAnimation + "/PD_AnimationLibrary.asset");
+            if (lib != null)
+            {
+                foreach (var e in lib.entries.Where(x => x != null && x.bake))
+                {
+                    var c = e.result;
+                    if (c == null) { Debug.Log($"[PD-DIAG] {e.clipName} : pas encore cuit"); continue; }
+                    var b = AnimationUtility.GetCurveBindings(c);
+                    var leg = b.FirstOrDefault(x => x.propertyName == "Left Upper Leg Front-Back");
+                    var arm = b.FirstOrDefault(x => x.propertyName == "Right Arm Down-Up");
+                    Debug.Log($"[PD-DIAG] {c.name} len={c.length:0.00} human={c.humanMotion} courbes={b.Length} jambeG={Range(c, leg)} brasD={Range(c, arm)}");
+                }
+            }
             var player = AssetDatabase.LoadAssetAtPath<GameObject>(PDPaths.Prefabs + "/PD_Player.prefab");
             if (player != null)
             {
@@ -32,31 +41,13 @@ namespace PuppetDungeon.EditorTools
             }
         }
 
-        private static void Report(string path)
+        private static string Range(AnimationClip clip, EditorCurveBinding b)
         {
-            string p = PDPaths.FindPath(path);
-            if (p == null) { Debug.Log("[PD-DIAG] introuvable: " + path); return; }
-            var mi = AssetImporter.GetAtPath(p) as ModelImporter;
-            var assets = AssetDatabase.LoadAllAssetsAtPath(p);
-            var avatar = assets.OfType<Avatar>().FirstOrDefault();
-            string msg = $"[PD-DIAG] {p} type={(mi != null ? mi.animationType.ToString() : "?")} setup={(mi != null ? mi.avatarSetup.ToString() : "?")} " +
-                         $"humanBonesMeta={(mi != null ? mi.humanDescription.human.Length : -1)} " +
-                         $"avatar={(avatar != null ? avatar.name + " valid=" + avatar.isValid + " human=" + avatar.isHuman + " bones=" + avatar.humanDescription.human.Length : "AUCUN")}";
-            foreach (var clip in assets.OfType<AnimationClip>().Where(c => !c.name.StartsWith("__preview__")))
-            {
-                var b = AnimationUtility.GetCurveBindings(clip);
-                var leg = b.FirstOrDefault(x => x.propertyName.Contains("Left Upper Leg Front-Back"));
-                string range = "-";
-                if (!string.IsNullOrEmpty(leg.propertyName))
-                {
-                    var c = AnimationUtility.GetEditorCurve(clip, leg);
-                    float mn = float.MaxValue, mx = float.MinValue;
-                    for (float t = 0; t <= clip.length; t += clip.length / 20f) { float v = c.Evaluate(t); mn = Mathf.Min(mn, v); mx = Mathf.Max(mx, v); }
-                    range = mn.ToString("0.00") + ".." + mx.ToString("0.00");
-                }
-                msg += $"\n    clip {clip.name} len={clip.length:0.00} human={clip.humanMotion} curves={b.Length} muscles={b.Count(x => x.type == typeof(Animator))} jambeG={range}";
-            }
-            Debug.Log(msg);
+            if (string.IsNullOrEmpty(b.propertyName)) return "-";
+            var curve = AnimationUtility.GetEditorCurve(clip, b);
+            if (curve == null || curve.length == 0) return "-";
+            float mn = curve.keys.Min(k => k.value), mx = curve.keys.Max(k => k.value);
+            return $"{mn:0.00}..{mx:0.00}";
         }
     }
 }

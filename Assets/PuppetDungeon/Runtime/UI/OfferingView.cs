@@ -18,11 +18,16 @@ namespace PuppetDungeon
         public TMP_Text header;
         public TMP_Text subHeader;
         public TMP_Text counter;
+        public TMP_Text recycleText;
         public Button confirmButton;
 
         private readonly List<OfferingCardView> cards = new List<OfferingCardView>();
+        private readonly HashSet<OfferingCardView> fromBag = new HashSet<OfferingCardView>();
         private int maxSelection = 1;
         private System.Action<List<PartInstance>> onConfirm;
+
+        /// <summary>Le choix de l'offrande est obligatoire.</summary>
+        public override bool CloseOnCancel => false;
 
         protected override void Awake()
         {
@@ -37,6 +42,7 @@ namespace PuppetDungeon
             maxSelection = Mathf.Max(1, max);
             foreach (var c in cards) if (c != null) Destroy(c.gameObject);
             cards.Clear();
+            fromBag.Clear();
             foreach (var p in equipped) AddCard(p, true);
             foreach (var p in bag) AddCard(p, false);
             if (header != null) header.text = maxSelection > 1 ? "Nuit des Fils Dorés !" : "L'Offrande";
@@ -56,6 +62,7 @@ namespace PuppetDungeon
             c.Bind(p, equipped);
             c.Clicked = OnCardClicked;
             cards.Add(c);
+            if (!equipped) fromBag.Add(c);
         }
 
         private void OnCardClicked(OfferingCardView card)
@@ -79,6 +86,16 @@ namespace PuppetDungeon
         {
             int n = cards.Count(c => c.Selected);
             if (counter != null) counter.text = $"{n} / {maxSelection}";
+            if (recycleText != null && GameManager.Instance != null)
+            {
+                var cfg = GameManager.Instance.Config;
+                bool keepBag = cfg.rebirthKeepsInventory;
+                var rest = cards.Where(c => !c.Selected && (!keepBag || !fromBag.Contains(c))).Select(c => c.Part);
+                int value = Gacha.ValueOf(rest);
+                recycleText.text = value > 0
+                    ? $"Le reste sera recyclé : <color=#F2C14E>+{value} {cfg.currencyName}</color> pour la Tisseuse"
+                    : "";
+            }
             if (confirmButton != null) confirmButton.interactable = n > 0 || cards.Count == 0;
         }
 

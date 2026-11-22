@@ -169,6 +169,10 @@ namespace PuppetDungeon
         public int bossesKilled;
         public float playTime;
         public List<string> fallenPuppets = new List<string>();
+        public int currency;                // monnaie du gacha (pièces recyclées au village)
+        public int gachaSincePity;          // tirages depuis la dernière pièce Épique ou mieux
+        public int gachaPulls;
+        public int partsRecycled;
         public Inventory inventory;
 
         public RunState(int inventorySize)

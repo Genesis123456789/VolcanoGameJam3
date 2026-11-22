@@ -16,6 +16,7 @@ namespace PuppetDungeon
             Layers.ResetStatics();
             MaterialFactory.ClearCache();
             PartIconRenderer.ResetStatics();
+            UIPanel.ResetStatics();
         }
     }
 }

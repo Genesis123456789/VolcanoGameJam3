@@ -8,7 +8,10 @@ namespace PuppetDungeon
     /// <summary>
     /// Génération procédurale « à la demande » (repris du prototype ElGenerator, corrigé) :
     /// chaque porte non liée génère la salle suivante, collée porte contre porte. La salle d'arrivée
-    /// reçoit une porte d'entrée derrière le joueur. Après N salles apparaît la salle de sortie.
+    /// reçoit une porte d'entrée derrière le joueur.
+    /// Le type de chaque nouvelle salle est tiré selon le nombre de salles déjà parcourues
+    /// (courbes « exitChanceByRooms » et « bossChanceByRooms » de PD_GameConfig) : plus on explore,
+    /// plus la sortie est probable ; les boss sont rares en début de donjon.
     /// Gère aussi la transition caméra « à la Zelda » entre deux salles.
     /// </summary>
     public class DungeonManager : MonoBehaviour
@@ -22,8 +25,10 @@ namespace PuppetDungeon
         public RoomController CurrentRoom { get; private set; }
         public bool IsTraveling { get; private set; }
         public int RoomsGenerated => rooms.Count;
-        public int TargetRooms { get; private set; }
         public bool ExitSpawned { get; private set; }
+        /// <summary>Salles parcourues dans ce donjon (salle de départ exclue).</summary>
+        public int RoomsVisited => Mathf.Max(0, rooms.Count - 1);
+        public int BossRoomsSpawned { get; private set; }
         public DungeonTheme Theme { get; private set; }
         public AudioLibrary Lib => GameManager.Instance.Config.audio;
 
@@ -31,6 +36,7 @@ namespace PuppetDungeon
         private Transform roomsRoot;
         private GameConfig cfg;
         private int dungeonIndex;
+        private int roomsSinceExit;
 
         private void Awake()
         {
@@ -38,6 +44,8 @@ namespace PuppetDungeon
             rooms.Clear();
             IsTraveling = false;
             ExitSpawned = false;
+            BossRoomsSpawned = 0;
+            roomsSinceExit = 0;
             CurrentRoom = null;
         }
 
@@ -54,7 +62,6 @@ namespace PuppetDungeon
             cfg = gm.Config;
             dungeonIndex = gm.Run.dungeonIndex;
             Theme = cfg.ThemeFor(dungeonIndex);
-            TargetRooms = cfg.RoomsForDungeon(dungeonIndex);
             ApplyTheme();
 
             roomsRoot = new GameObject("Salles").transform;
@@ -109,10 +116,7 @@ namespace PuppetDungeon
         public RoomController Generate(Door fromDoor)
         {
             var plan = new RoomPlan { index = rooms.Count };
-            bool makeExit = fromDoor != null && !ExitSpawned && rooms.Count >= TargetRooms;
-            if (fromDoor == null) plan.kind = RoomKind.Start;
-            else if (makeExit) plan.kind = RoomKind.Exit;
-            else plan.kind = Random.value < cfg.bossRoomChance && rooms.Count > 1 ? RoomKind.Boss : RoomKind.Normal;
+            plan.kind = fromDoor == null ? RoomKind.Start : PickRoomKind();
 
             bool placed = false;
             WallSide? entrySide = fromDoor != null ? EnumUtil.Opposite(fromDoor.side) : (WallSide?)null;
@@ -151,7 +155,14 @@ namespace PuppetDungeon
 
             var room = RoomBuilder.Build(plan, Theme, roomsRoot);
             rooms.Add(room);
-            if (plan.kind == RoomKind.Exit) ExitSpawned = true;
+            if (plan.kind == RoomKind.Exit)
+            {
+                ExitSpawned = true;
+                roomsSinceExit = 0;
+                Debug.Log($"[PuppetDungeon] Sortie générée (salle n°{rooms.Count}, {RoomsVisited} salles parcourues).");
+            }
+            else if (ExitSpawned && fromDoor != null) roomsSinceExit++;
+            if (plan.kind == RoomKind.Boss) BossRoomsSpawned++;
 
             if (fromDoor != null)
             {
@@ -162,6 +173,19 @@ namespace PuppetDungeon
             foreach (var d in room.doors) d.room = room;
             room.SetVisible(fromDoor == null);
             return room;
+        }
+
+        /// <summary>
+        /// Type de la prochaine nouvelle salle. La sortie peut réapparaître si la précédente a été
+        /// laissée derrière depuis « roomsBeforeAnotherExit » salles : on ne peut plus se perdre sans fin.
+        /// </summary>
+        private RoomKind PickRoomKind()
+        {
+            int visited = RoomsVisited;
+            bool exitAllowed = !ExitSpawned || roomsSinceExit >= cfg.roomsBeforeAnotherExit;
+            if (exitAllowed && Random.value < cfg.ExitChance(visited, dungeonIndex)) return RoomKind.Exit;
+            if (visited >= 1 && BossRoomsSpawned < cfg.maxBossRoomsPerDungeon && Random.value < cfg.BossChance(visited, dungeonIndex)) return RoomKind.Boss;
+            return RoomKind.Normal;
         }
 
         private static int Odd(int v) => (v % 2 == 0) ? v + 1 : v;

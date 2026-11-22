@@ -14,6 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: PuppetDungeon.Runtime::PuppetDungeon.EnemyDefinition
   displayName: Rempart sans visage
   prefab: {fileID: 7174766908635958867, guid: 32ecb1bf248496b49804e8f7dd3ccde2, type: 3}
+  animations: {fileID: 11400000, guid: 90fc6a6cca20e904db8ce00211935887, type: 2}
   behaviour: 2
   maxHealth: 58
   damage: 12

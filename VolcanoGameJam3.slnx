@@ -1,6 +1,6 @@
 ﻿<Solution>
-  <Project Path="PuppetDungeon.Runtime.csproj" />
   <Project Path="PuppetDungeon.Editor.csproj" />
+  <Project Path="PuppetDungeon.Runtime.csproj" />
   <Project Path="Assembly-CSharp-Editor.csproj" />
   <Project Path="Assembly-CSharp.csproj" />
 </Solution>

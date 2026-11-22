@@ -20,8 +20,9 @@ namespace PuppetDungeon.EditorTools
 
         public static void LoadTheme()
         {
-            Panel = PDPaths.Find<Sprite>(PDPaths.UIPanel);
-            PanelClean = PDPaths.Find<Sprite>(PDPaths.UIPanelClean);
+            // Panneaux opaques (générés à partir des PNG fournis) : plus de textes qui se superposent.
+            Panel = PDAssets.PanelOpaque != null ? PDAssets.PanelOpaque : PDPaths.Find<Sprite>(PDPaths.UIPanel);
+            PanelClean = PDAssets.PanelCleanOpaque != null ? PDAssets.PanelCleanOpaque : PDPaths.Find<Sprite>(PDPaths.UIPanelClean);
             ButtonSprite = PDPaths.Find<Sprite>(PDPaths.UIButton);
             White = PDAssets.White;
             Circle = PDAssets.Circle;
@@ -115,6 +116,11 @@ namespace PuppetDungeon.EditorTools
             t.raycastTarget = false;
             t.richText = true;
             t.textWrappingMode = TextWrappingModes.Normal;
+            // Le texte rétrécit pour tenir dans son cadre (jusqu'à 55 %), puis « … » en dernier recours.
+            t.enableAutoSizing = true;
+            t.fontSizeMax = size;
+            t.fontSizeMin = Mathf.Max(10f, Mathf.Round(size * 0.55f));
+            t.overflowMode = TextOverflowModes.Truncate; // la police n'a pas le caractère « … »
             if (bold) t.fontStyle = FontStyles.Bold;
             if (outline && OutlineMaterial != null) t.fontSharedMaterial = OutlineMaterial;
             return t;
@@ -143,6 +149,14 @@ namespace PuppetDungeon.EditorTools
             Text(t, label, fontSize, Parchment, TextAlignmentOptions.Center, true, true);
             rt.gameObject.AddComponent<ButtonJuice>();
             return b;
+        }
+
+        /// <summary>Texte dont la hauteur suit le contenu (mises en page dynamiques) : pas d'auto-taille.</summary>
+        public static TextMeshProUGUI FlowText(TextMeshProUGUI t)
+        {
+            t.enableAutoSizing = false;
+            t.overflowMode = TextOverflowModes.Overflow;
+            return t;
         }
 
         public static CanvasGroup Group(RectTransform rt, float alpha = 1f, bool interactable = true)

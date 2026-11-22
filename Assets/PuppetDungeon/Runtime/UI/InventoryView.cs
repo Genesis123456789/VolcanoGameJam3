@@ -87,8 +87,49 @@ namespace PuppetDungeon
             if (player != null) player.Lock(true);
             EnablePreview(true);
             Refresh();
-            if (hintText != null)
-                hintText.text = "Glisser-déposer pour équiper  •  Clic droit : équiper / retirer  •  Glisser dans la corbeille pour détruire";
+            hintMode = -1;
+            UpdateHint();
+        }
+
+        private int hintMode = -1;
+        private ItemSlotView trashArmed;
+        private float trashArmedUntil;
+
+        private void UpdateHint()
+        {
+            if (hintText == null) return;
+            int mode = InputHints.UsingGamepad ? 1 : 0;
+            if (mode == hintMode) return;
+            hintMode = mode;
+            hintText.text = mode == 1
+                ? "A : équiper / retirer  •  X deux fois : détruire  •  B : fermer"
+                : "Glisser-déposer pour équiper  •  Clic droit : équiper / retirer  •  Glisser dans la corbeille pour détruire";
+        }
+
+        private void Update()
+        {
+            if (!IsOpen) return;
+            UpdateHint();
+            // Manette : X sur une pièce sélectionnée la détruit (confirmation par un second appui).
+            var g = UnityEngine.InputSystem.Gamepad.current;
+            if (g == null || !g.buttonWest.wasPressedThisFrame) return;
+            var es = EventSystem.current;
+            var slot = es != null && es.currentSelectedGameObject != null ? es.currentSelectedGameObject.GetComponent<ItemSlotView>() : null;
+            if (slot == null || slot.Part == null || slot.kind == ItemSlotView.Kind.Trash) return;
+            var part = slot.Part;
+            if (trashArmed == slot && Time.unscaledTime < trashArmedUntil)
+            {
+                trashArmed = null;
+                Inv.Remove(part);
+                AudioManager.Sfx(l => l.hit, 0.8f, 0.7f);
+                if (Root != null) Root.Toast($"{part.DisplayName} réduit en copeaux", new Color(0.85f, 0.75f, 0.6f));
+            }
+            else
+            {
+                trashArmed = slot;
+                trashArmedUntil = Time.unscaledTime + 1.5f;
+                if (Root != null) Root.Toast($"X encore une fois pour détruire {part.DisplayName}", new Color(1f, 0.6f, 0.45f));
+            }
         }
 
         protected override void OnClosed()

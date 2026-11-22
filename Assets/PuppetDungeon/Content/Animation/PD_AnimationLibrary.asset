@@ -1,0 +1,94 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b39ce15dc7f3b4fbac449d45e19220a7, type: 3}
+  m_Name: PD_AnimationLibrary
+  m_EditorClassIdentifier: PuppetDungeon.Runtime::PuppetDungeon.AnimationLibrary
+  defaultProfile: {fileID: 11400000, guid: b84f908037c3f5c47996b41ca0cf6a51, type: 2}
+  entries:
+  - source: {fileID: 919132149155446097, guid: be01c78ca92b81d4f909305c01328eae, type: 3}
+    clipName: 67
+    loop: 0
+    bake: 1
+    profile: {fileID: 0}
+    result: {fileID: 7400000, guid: ab7c0376e29a9b4409d9a40d68eec4e2, type: 2}
+  - source: {fileID: 919132149155446097, guid: d4099a6b0b346e148a394deb88fd95c3, type: 3}
+    clipName: aim_genoux
+    loop: 0
+    bake: 1
+    profile: {fileID: 0}
+    result: {fileID: 7400000, guid: 27d68cc82efcd934daadfa96078fd604, type: 2}
+  - source: {fileID: 919132149155446097, guid: 245ce9f61e1a43443bdee35ca54c58aa, type: 3}
+    clipName: aim_pose
+    loop: 0
+    bake: 1
+    profile: {fileID: 0}
+    result: {fileID: 7400000, guid: f13de8e5a4126364daeeecacac143557, type: 2}
+  - source: {fileID: 919132149155446097, guid: b2ae653dbeebb3249bb2ca148011a07d, type: 3}
+    clipName: ALL_anime
+    loop: 0
+    bake: 0
+    profile: {fileID: 0}
+    result: {fileID: 0}
+  - source: {fileID: 919132149155446097, guid: 566edc4a8b344a34990ac6c5c8a69cf4, type: 3}
+    clipName: anime_marche_rig
+    loop: 0
+    bake: 0
+    profile: {fileID: 0}
+    result: {fileID: 0}
+  - source: {fileID: 919132149155446097, guid: cd97d192e991ae04ba8134710e1e4b18, type: 3}
+    clipName: garde_pose
+    loop: 0
+    bake: 1
+    profile: {fileID: 0}
+    result: {fileID: 7400000, guid: 28625cd179ca49c4ab24075e3daa2a19, type: 2}
+  - source: {fileID: 919132149155446097, guid: 195f2a42977ed354e8f18862fac90bbc, type: 3}
+    clipName: hit_Shilder
+    loop: 0
+    bake: 1
+    profile: {fileID: 0}
+    result: {fileID: 7400000, guid: f88254e8bf8a554408ad296844d6e79e, type: 2}
+  - source: {fileID: 919132149155446097, guid: 87d62fc3ace0e0e4d9b309aba3f684f8, type: 3}
+    clipName: idle
+    loop: 1
+    bake: 1
+    profile: {fileID: 0}
+    result: {fileID: 7400000, guid: 787b0dbe30bf95c429f5f1dcc55be720, type: 2}
+  - source: {fileID: 919132149155446097, guid: 9669e9af1d126c94ca392892c1009e7e, type: 3}
+    clipName: run_cicle
+    loop: 1
+    bake: 1
+    profile: {fileID: 0}
+    result: {fileID: 7400000, guid: 39e37820c4f3e1e41b8789144b87534a, type: 2}
+  - source: {fileID: 919132149155446097, guid: 4dea1d04ae2cf9647bb5330c7fb7566c, type: 3}
+    clipName: shoot
+    loop: 0
+    bake: 1
+    profile: {fileID: 0}
+    result: {fileID: 7400000, guid: 2768b2aa9e9de314c8c227541682bb32, type: 2}
+  - source: {fileID: 919132149155446097, guid: 8d886dfcc5b39334b9f6647192128d9f, type: 3}
+    clipName: sot_genoux
+    loop: 0
+    bake: 1
+    profile: {fileID: 0}
+    result: {fileID: 7400000, guid: 5db485c49aa98f94eb6cab04cd0e68c4, type: 2}
+  - source: {fileID: 919132149155446097, guid: 4c393b3084750544ba787b010c4a3c79, type: 3}
+    clipName: sworld_att
+    loop: 0
+    bake: 1
+    profile: {fileID: 0}
+    result: {fileID: 7400000, guid: 625df77674a72344997e05ac39952229, type: 2}
+  - source: {fileID: 919132149155446097, guid: c7579d678405fcb4fa45682e79a3800f, type: 3}
+    clipName: walk_cicle
+    loop: 1
+    bake: 1
+    profile: {fileID: 0}
+    result: {fileID: 7400000, guid: c6d761ea2d42e6242933119a8156881a, type: 2}

@@ -7,6 +7,8 @@ namespace PuppetDungeon
     /// <summary>Écran « Vos fils sont coupés » avec le bilan de la run.</summary>
     public class GameOverView : UIPanel
     {
+        public override bool CloseOnCancel => false;
+
         public TMP_Text title;
         public TMP_Text summary;
         public Button retryButton;

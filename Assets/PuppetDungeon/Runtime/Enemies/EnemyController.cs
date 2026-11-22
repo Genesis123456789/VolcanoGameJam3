@@ -52,9 +52,6 @@ namespace PuppetDungeon
         private int bossPattern;
         private bool enraged;
         private float idleSway;
-        private static readonly int SpeedId = Animator.StringToHash("Speed");
-        private static readonly int AttackId = Animator.StringToHash("Attack");
-        private static readonly int AttackSpeedId = Animator.StringToHash("AttackSpeed");
 
         private void Awake()
         {
@@ -71,17 +68,21 @@ namespace PuppetDungeon
             idleSway = Random.Range(0f, 10f);
         }
 
+        private float tempo = 1f;
+
         public void Init(EnemyDefinition def, int dungeonIndex, GameConfig cfg)
         {
             Definition = def;
             DungeonIndex = dungeonIndex;
             float hp = def.maxHealth * cfg.EnemyHealthScale(dungeonIndex);
             Damage = def.damage * cfg.EnemyDamageScale(dungeonIndex);
+            tempo = cfg.EnemyTempo(dungeonIndex);
             Health.Init(hp);
             Health.armor = def.armor * cfg.EnemyDamageScale(dungeonIndex);
             transform.localScale = Vector3.one * def.visualScale;
             nextAttackTime = Time.time + Random.Range(0.4f, 1.2f);
             SetState(State.Dormant);
+            if (rig != null) rig.UseAnimations(def.animations != null ? def.animations : cfg.defaultAnimations);
         }
 
         // ------------------------------------------------------------------ Alerte
@@ -165,8 +166,12 @@ namespace PuppetDungeon
                     OnChargeWallHit();
             }
 
-            if (animator != null && animator.runtimeAnimatorController != null)
-                animator.SetFloat(SpeedId, Mathf.Clamp01(move.magnitude / Mathf.Max(0.1f, Definition != null ? Definition.moveSpeed : 3f)), 0.1f, Time.deltaTime);
+            if (rig != null)
+            {
+                // 0.35 = marche dans le blend tree ; les ennemis courent quand ils sont enragés ou chargent.
+                float speed01 = move.magnitude / Mathf.Max(0.1f, Definition != null ? Definition.moveSpeed : 3f);
+                rig.SetSpeed(state == State.Attacking ? 0f : Mathf.Clamp01(speed01 * (enraged ? 0.9f : 0.55f)), 0.1f);
+            }
         }
 
         private Vector3 ChaseMove(Vector3 toPlayer, float dist)
@@ -201,13 +206,15 @@ namespace PuppetDungeon
 
         private void BeginWindup(Vector3 toPlayer)
         {
-            float windup = Definition.windup * (enraged ? 0.75f : 1f);
+            float windup = Definition.windup * tempo * (enraged ? 0.75f : 1f);
             if (IsBoss)
             {
                 bossPattern = PickBossPattern(toPlayer.magnitude);
                 windup *= bossPattern == 0 ? 1.4f : 1f;
             }
             SetState(State.Windup, windup);
+            // Posture de garde / visée pendant la préparation (bouclier levé, arbalète épaulée…)
+            if (rig != null) rig.SetGuard(Definition.behaviour != EnemyBehaviour.Chaser);
             chargeDir = toPlayer.sqrMagnitude > 0.001f ? toPlayer.normalized : transform.forward;
             if (flash != null) flash.Flash(new Color(1f, 0.85f, 0.3f), windup);
             if (squash != null) squash.Punch(new Vector3(0.15f, -0.2f, 0.15f));
@@ -239,10 +246,10 @@ namespace PuppetDungeon
         {
             SetState(State.Attacking, 5f);
             if (telegraph != null) { Destroy(telegraph); telegraph = null; }
-            if (animator != null && animator.runtimeAnimatorController != null)
+            if (rig != null)
             {
-                animator.SetFloat(AttackSpeedId, 1.4f);
-                animator.SetTrigger(AttackId);
+                rig.SetGuard(false);
+                rig.PlayAttack(false, 0.6f);
             }
             if (squash != null) squash.Punch(new Vector3(-0.1f, 0.15f, 0.3f));
 
@@ -271,7 +278,7 @@ namespace PuppetDungeon
             if (state == State.Attacking || state == State.Windup)
             {
                 SetState(State.Recover, IsBoss ? 0.6f : 0.55f);
-                nextAttackTime = Time.time + Definition.attackCooldown * (enraged ? 0.65f : 1f) * Random.Range(0.85f, 1.2f);
+                nextAttackTime = Time.time + Definition.attackCooldown * tempo * (enraged ? 0.65f : 1f) * Random.Range(0.85f, 1.2f);
             }
         }
 
@@ -389,6 +396,7 @@ namespace PuppetDungeon
         {
             if (flash != null) flash.Flash(Color.white, 0.1f);
             if (squash != null) squash.Punch(new Vector3(0.25f, -0.3f, 0.25f));
+            if (rig != null && state != State.Attacking) rig.PlayHit();
             float kbResist = IsBoss ? 0.15f : 1f;
             Vector3 kb = info.direction; kb.y = 0f;
             if (kb.sqrMagnitude > 0.001f) knockVelocity = kb.normalized * info.knockback * kbResist;

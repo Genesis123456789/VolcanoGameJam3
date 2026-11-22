@@ -17,12 +17,24 @@ namespace PuppetDungeon
         /// <summary>xz : écart horizontal, y : écart vertical. Ex : (0.25, -0.25, 0.25) pour écraser.</summary>
         public void Punch(Vector3 delta)
         {
-            offset += delta;
+            // Les punchs successifs ne s'additionnent pas sans fin (ex : plusieurs pièces équipées d'affilée).
+            offset = Vector3.ClampMagnitude(offset + delta, 0.35f);
         }
+
+        /// <summary>Revient immédiatement à l'échelle de repos.</summary>
+        public void ResetNow()
+        {
+            offset = Vector3.zero;
+            velocity = Vector3.zero;
+            transform.localScale = baseScale;
+        }
+
+        private void OnDisable() => ResetNow();
 
         private void LateUpdate()
         {
-            float dt = Mathf.Min(Time.deltaTime, 0.05f);
+            // Temps réel : le ressort revient au repos même jeu en pause (aperçu du pantin dans l'inventaire).
+            float dt = Mathf.Min(Time.unscaledDeltaTime, 0.05f);
             Vector3 force = -stiffness * offset - damping * velocity;
             velocity += force * dt;
             offset += velocity * dt;

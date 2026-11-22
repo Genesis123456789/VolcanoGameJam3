@@ -109,7 +109,7 @@ namespace PuppetDungeon
                 else if (Time.time > warnCooldown)
                 {
                     warnCooldown = Time.time + 2f;
-                    if (UIRoot.Instance != null) UIRoot.Instance.Toast("Sac plein ! Faites de la place (I / Tab).", new Color(1f, 0.5f, 0.4f));
+                    if (UIRoot.Instance != null) UIRoot.Instance.Toast($"Sac plein ! Faites de la place ({InputHints.Inventory}).", new Color(1f, 0.5f, 0.4f));
                 }
             }
         }

@@ -1,4 +1,4 @@
-# Lore — Les Fils du Pantin
+# Lore — Puppet Dungeon
 
 ## Le monde en quelques lignes
 Autrefois, un grand théâtre de marionnettes animait toute une ville. Le **Marionnettiste** y tirait chaque soir

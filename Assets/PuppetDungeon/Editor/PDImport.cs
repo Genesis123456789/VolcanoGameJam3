@@ -43,44 +43,22 @@ namespace PuppetDungeon.EditorTools
 
         // ------------------------------------------------------------------ Modèles
 
-        /// <summary>Rig du pantin : humanoïde, avatar créé depuis le modèle.</summary>
+        /// <summary>
+        /// Rig du pantin : importé en « Generic » sans avatar. L'avatar humanoïde est construit par
+        /// l'outil (PD_Avatar_Pantin) car l'auto-configuration d'Unity se fie aux noms, or
+        /// rig_ff002 nomme « LeftUpLeg » la jambe droite du personnage (corrigé géométriquement).
+        /// </summary>
         public static void ConfigureRig()
         {
             string path = PDPaths.FindPath(PDPaths.Rig);
             if (path == null) { Debug.LogError("[PuppetDungeon] Rig introuvable : " + PDPaths.Rig); return; }
             var mi = (ModelImporter)AssetImporter.GetAtPath(path);
             bool dirty = false;
-            if (mi.animationType != ModelImporterAnimationType.Human) { mi.animationType = ModelImporterAnimationType.Human; dirty = true; }
-            if (mi.avatarSetup != ModelImporterAvatarSetup.CreateFromThisModel) { mi.avatarSetup = ModelImporterAvatarSetup.CreateFromThisModel; dirty = true; }
+            if (mi.animationType != ModelImporterAnimationType.Generic) { mi.animationType = ModelImporterAnimationType.Generic; dirty = true; }
+            if (mi.avatarSetup != ModelImporterAvatarSetup.NoAvatar) { mi.avatarSetup = ModelImporterAvatarSetup.NoAvatar; dirty = true; }
+            if (mi.importAnimation) { mi.importAnimation = false; dirty = true; }
             if (!mi.importVisibility) { mi.importVisibility = true; dirty = true; }
             if (dirty) mi.SaveAndReimport();
-        }
-
-        /// <summary>Clips : humanoïdes (reciblage sur le rig), en place, boucle pour marche/course.</summary>
-        public static void ConfigureAnimation(string assetPath, string clipName, bool loop)
-        {
-            string path = PDPaths.FindPath(assetPath);
-            if (path == null) { Debug.LogWarning("[PuppetDungeon] Animation introuvable : " + assetPath); return; }
-            var mi = (ModelImporter)AssetImporter.GetAtPath(path);
-            mi.animationType = ModelImporterAnimationType.Human;
-            mi.avatarSetup = ModelImporterAvatarSetup.CreateFromThisModel;
-            mi.importAnimation = true;
-            mi.SaveAndReimport();
-
-            var clips = mi.defaultClipAnimations;
-            if (clips == null || clips.Length == 0) return;
-            var c = clips[0];
-            c.name = clipName;
-            c.loopTime = loop;
-            c.loopPose = loop;
-            c.lockRootRotation = true;
-            c.lockRootHeightY = true;
-            c.lockRootPositionXZ = true;
-            c.keepOriginalOrientation = true;
-            c.keepOriginalPositionY = true;
-            c.keepOriginalPositionXZ = true;
-            mi.clipAnimations = new[] { c };
-            mi.SaveAndReimport();
         }
 
         public static void ConfigurePartModel(string assetPath)
@@ -122,11 +100,5 @@ namespace PuppetDungeon.EditorTools
             ai.SaveAndReimport();
         }
 
-        /// <summary>Recharge un clip depuis un modèle (après import).</summary>
-        public static AnimationClip Clip(string assetPath)
-        {
-            string path = PDPaths.FindPath(assetPath);
-            return path == null ? null : AssetDatabase.LoadAllAssetsAtPath(path).OfType<AnimationClip>().FirstOrDefault(c => !c.name.StartsWith("__preview__"));
-        }
     }
 }

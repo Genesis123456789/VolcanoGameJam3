@@ -11,16 +11,21 @@ namespace PuppetDungeon
         public Button playButton;
         public Button optionsButton;
         public Button quitButton;
+        public Button creditsButton;
         public OptionsView options;
+        public CreditsView credits;
         public TMP_Text title;
         public RectTransform titleRoot;
 
         private void Start()
         {
             UIRoot.EnsureEventSystem();
+            if (title != null) title.text = GameInfo.Title.ToUpperInvariant();
+            UIRoot.NoEllipsis(transform);
             if (playButton != null) playButton.onClick.AddListener(() => GameManager.Instance.StartNewRunFromMenu());
             if (optionsButton != null) optionsButton.onClick.AddListener(() => { if (options != null) options.Toggle(); });
             if (quitButton != null) quitButton.onClick.AddListener(Quit);
+            if (creditsButton != null) creditsButton.onClick.AddListener(() => { if (credits != null) credits.Show(); });
             if (playButton != null && EventSystem.current != null) EventSystem.current.SetSelectedGameObject(playButton.gameObject);
             var gm = GameManager.Instance;
             if (gm != null && gm.Config.audio != null && AudioManager.Instance != null)

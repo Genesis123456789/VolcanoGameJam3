@@ -1,0 +1,26 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a078f90c6e8765cd4e0dad8a4c311b3e, type: 3}
+  m_Name: PD_Anim_Arbalete
+  m_EditorClassIdentifier: PuppetDungeon.Runtime::PuppetDungeon.PuppetAnimationSet
+  label: "Arbal\xE8te"
+  idle: {fileID: 0}
+  walk: {fileID: 0}
+  run: {fileID: 0}
+  attack: {fileID: 7400000, guid: 2768b2aa9e9de314c8c227541682bb32, type: 2}
+  attackStill: {fileID: 7400000, guid: 2768b2aa9e9de314c8c227541682bb32, type: 2}
+  attackPlaybackSpeed: 1
+  guard: {fileID: 7400000, guid: f13de8e5a4126364daeeecacac143557, type: 2}
+  celebrate: {fileID: 0}
+  hit: {fileID: 7400000, guid: f88254e8bf8a554408ad296844d6e79e, type: 2}
+  dataVersion: 3
+  controller: {fileID: 22100000, guid: 04b5866991e157540b35846e237c2c05, type: 2}

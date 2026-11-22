@@ -14,6 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: PuppetDungeon.Runtime::PuppetDungeon.EnemyDefinition
   displayName: Pantin errant
   prefab: {fileID: 176119232214225086, guid: 91f5479e73d0d2b42b48e169b1a43638, type: 3}
+  animations: {fileID: 11400000, guid: bd7933c2e85e6e3419576d898f338630, type: 2}
   behaviour: 0
   maxHealth: 34
   damage: 9

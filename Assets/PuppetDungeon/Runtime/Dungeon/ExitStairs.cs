@@ -9,9 +9,12 @@ namespace PuppetDungeon
         public GameObject lockedVisual;
         public GameObject openVisual;
         public Light glow;
+        [Tooltip("Colonne de lumière visible quand la trappe est ouverte (repère de la sortie).")]
+        public GameObject beam;
 
         private Interactable interactable;
         private bool active;
+        private float nextSparkle;
 
         private void Awake()
         {
@@ -30,6 +33,7 @@ namespace PuppetDungeon
             if (lockedVisual != null) lockedVisual.SetActive(true);
             if (openVisual != null) openVisual.SetActive(false);
             if (glow != null) glow.enabled = false;
+            if (beam != null) beam.SetActive(false);
         }
 
         public void Activate()
@@ -43,6 +47,7 @@ namespace PuppetDungeon
             if (lockedVisual != null) lockedVisual.SetActive(false);
             if (openVisual != null) openVisual.SetActive(true);
             if (glow != null) glow.enabled = true;
+            if (beam != null) beam.SetActive(true);
             Juice.Spawn(v => v.lootBurst, transform.position + Vector3.up * 0.3f, Quaternion.identity, new Color(1f, 0.8f, 0.4f), 1.5f);
             if (UIRoot.Instance != null) UIRoot.Instance.Toast("Une trappe s'est ouverte…", new Color(1f, 0.85f, 0.5f));
         }
@@ -59,6 +64,11 @@ namespace PuppetDungeon
         private void Update()
         {
             if (glow != null && active) glow.intensity = 2.5f + Mathf.Sin(Time.time * 3f) * 0.6f;
+            if (active && Time.time >= nextSparkle)
+            {
+                nextSparkle = Time.time + 1.4f;
+                Juice.Spawn(v => v.lootBurst, transform.position + Vector3.up * 0.3f, Quaternion.identity, new Color(1f, 0.8f, 0.4f), 0.7f);
+            }
         }
     }
 }

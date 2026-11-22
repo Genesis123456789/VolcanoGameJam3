@@ -17,6 +17,72 @@ namespace PuppetDungeon.EditorTools
         public static Sprite Circle => AssetDatabase.LoadAssetAtPath<Sprite>(PDPaths.Textures + "/PD_CircleSprite.png");
         public static Sprite Gradient => AssetDatabase.LoadAssetAtPath<Sprite>(PDPaths.Textures + "/PD_Gradient.png");
 
+        public static Sprite PanelOpaque => AssetDatabase.LoadAssetAtPath<Sprite>(PDPaths.Textures + "/PD_PanelOpaque.png");
+        public static Sprite PanelCleanOpaque => AssetDatabase.LoadAssetAtPath<Sprite>(PDPaths.Textures + "/PD_PanelCleanOpaque.png");
+
+        /// <summary>
+        /// Version opaque des panneaux bois : l'intérieur des PNG fournis est noir à 53 % d'opacité,
+        /// les textes du décor ou des écrans dessous transparaissaient et se superposaient.
+        /// On remplit l'intérieur (remplissage depuis le centre) avec un bois sombre opaque ;
+        /// le cadre et les découpes extérieures restent identiques (mêmes bordures 9-slice).
+        /// </summary>
+        public static void CreateOpaquePanels()
+        {
+            MakeOpaque(PDPaths.UIPanel, "PD_PanelOpaque.png");
+            MakeOpaque(PDPaths.UIPanelClean, "PD_PanelCleanOpaque.png");
+        }
+
+        private static void MakeOpaque(string sourcePath, string file)
+        {
+            string src = PDPaths.FindPath(sourcePath);
+            if (src == null || !File.Exists(src)) return;
+            var tex = new Texture2D(2, 2, TextureFormat.RGBA32, false);
+            if (!tex.LoadImage(File.ReadAllBytes(src))) { Object.DestroyImmediate(tex); return; }
+            int w = tex.width, h = tex.height;
+            var px = tex.GetPixels32();
+            var filled = new bool[px.Length];
+            var stack = new System.Collections.Generic.Stack<int>();
+            int start = (h / 2) * w + w / 2;
+            if (px[start].a < 250) stack.Push(start);
+            var backing = new Color(0.30f, 0.20f, 0.13f);
+            while (stack.Count > 0)
+            {
+                int i = stack.Pop();
+                if (filled[i] || px[i].a >= 250) continue;
+                filled[i] = true;
+                float a = px[i].a / 255f;
+                var c = (Color)px[i];
+                px[i] = new Color(c.r * a + backing.r * (1f - a), c.g * a + backing.g * (1f - a), c.b * a + backing.b * (1f - a), 1f);
+                int x = i % w, y = i / w;
+                if (x > 0) stack.Push(i - 1);
+                if (x < w - 1) stack.Push(i + 1);
+                if (y > 0) stack.Push(i - w);
+                if (y < h - 1) stack.Push(i + w);
+            }
+            tex.SetPixels32(px);
+            tex.Apply();
+            PDPaths.EnsureFolder(PDPaths.Textures);
+            string path = PDPaths.Textures + "/" + file;
+            File.WriteAllBytes(path, tex.EncodeToPNG());
+            Object.DestroyImmediate(tex);
+            AssetDatabase.ImportAsset(path, ImportAssetOptions.ForceUpdate);
+            // Mêmes réglages de sprite que l'original (bordures 9-slice comprises)
+            var srcImp = (TextureImporter)AssetImporter.GetAtPath(src);
+            var ti = (TextureImporter)AssetImporter.GetAtPath(path);
+            ti.textureType = TextureImporterType.Sprite;
+            ti.spriteImportMode = SpriteImportMode.Single;
+            ti.alphaIsTransparency = true;
+            ti.mipmapEnabled = false;
+            ti.wrapMode = TextureWrapMode.Clamp;
+            ti.spriteBorder = srcImp != null ? srcImp.spriteBorder : new Vector4(132, 132, 132, 132);
+            ti.spritePixelsPerUnit = srcImp != null ? srcImp.spritePixelsPerUnit : 100f;
+            var s = new TextureImporterSettings();
+            ti.ReadTextureSettings(s);
+            s.spriteMeshType = SpriteMeshType.FullRect;
+            ti.SetTextureSettings(s);
+            ti.SaveAndReimport();
+        }
+
         public static void CreateTextures()
         {
             WriteTexture("PD_SoftCircle.png", 128, (x, y) =>
@@ -246,59 +312,6 @@ namespace PuppetDungeon.EditorTools
 
         // ------------------------------------------------------------------ Animation
 
-        public static AnimationClip CreateIdleClip(AnimationClip walk)
-        {
-            PDPaths.EnsureFolder(PDPaths.Animation);
-            string path = PDPaths.Animation + "/PD_Idle.anim";
-            var idle = AssetDatabase.LoadAssetAtPath<AnimationClip>(path);
-            bool create = idle == null;
-            if (create) idle = new AnimationClip { name = "PD_Idle" };
-            idle.ClearCurves();
-            if (walk == null) { if (create) AssetDatabase.CreateAsset(idle, path); return idle; }
-
-            var bindings = AnimationUtility.GetCurveBindings(walk);
-            // Instant où les jambes sont le plus rapprochées : la pose la plus « debout ».
-            var left = bindings.FirstOrDefault(b => b.propertyName.Contains("Left Upper Leg Front-Back"));
-            var right = bindings.FirstOrDefault(b => b.propertyName.Contains("Right Upper Leg Front-Back"));
-            float bestT = 0f;
-            if (!string.IsNullOrEmpty(left.propertyName) && !string.IsNullOrEmpty(right.propertyName))
-            {
-                var lc = AnimationUtility.GetEditorCurve(walk, left);
-                var rc = AnimationUtility.GetEditorCurve(walk, right);
-                float best = float.MaxValue;
-                for (float t = 0f; t <= walk.length; t += walk.length / 60f)
-                {
-                    float d = Mathf.Abs(lc.Evaluate(t) - rc.Evaluate(t));
-                    if (d < best) { best = d; bestT = t; }
-                }
-            }
-
-            const float len = 2.4f;
-            foreach (var b in bindings)
-            {
-                var src = AnimationUtility.GetEditorCurve(walk, b);
-                if (src == null) continue;
-                float v = src.Evaluate(bestT);
-                AnimationCurve curve;
-                string n = b.propertyName;
-                if (n.Contains("Spine Front-Back") || n.Contains("Chest Front-Back"))
-                    curve = new AnimationCurve(new Keyframe(0f, v), new Keyframe(len * 0.5f, v + 0.06f), new Keyframe(len, v));
-                else if (n.Contains("Head Nod Down-Up"))
-                    curve = new AnimationCurve(new Keyframe(0f, v), new Keyframe(len * 0.5f, v - 0.05f), new Keyframe(len, v));
-                else if (n.Contains("Arm Down-Up"))
-                    curve = new AnimationCurve(new Keyframe(0f, v - 0.05f), new Keyframe(len * 0.5f, v - 0.02f), new Keyframe(len, v - 0.05f));
-                else
-                    curve = new AnimationCurve(new Keyframe(0f, v), new Keyframe(len, v));
-                AnimationUtility.SetEditorCurve(idle, b, curve);
-            }
-            var settings = AnimationUtility.GetAnimationClipSettings(idle);
-            settings.loopTime = true;
-            AnimationUtility.SetAnimationClipSettings(idle, settings);
-            if (create) AssetDatabase.CreateAsset(idle, path);
-            EditorUtility.SetDirty(idle);
-            return idle;
-        }
-
         public static AvatarMask CreateUpperBodyMask()
         {
             string path = PDPaths.Animation + "/PD_UpperBody.mask";
@@ -319,71 +332,5 @@ namespace PuppetDungeon.EditorTools
             return mask;
         }
 
-        /// <summary>
-        /// Animator du pantin (joueur, villageois, ennemis) :
-        /// calque de base = blend tree Idle/Marche/Course sur « Speed »,
-        /// calque « Haut du corps » = attaque jouable en courant (masque d'avatar).
-        /// </summary>
-        public static AnimatorController CreateAnimator(AnimationClip idle, AnimationClip walk, AnimationClip run, AnimationClip attack)
-        {
-            string path = PDPaths.Animation + "/PD_Puppet.controller";
-            if (AssetDatabase.LoadAssetAtPath<AnimatorController>(path) != null) AssetDatabase.DeleteAsset(path);
-            var ctrl = AnimatorController.CreateAnimatorControllerAtPath(path);
-            ctrl.AddParameter("Speed", AnimatorControllerParameterType.Float);
-            ctrl.AddParameter("Attack", AnimatorControllerParameterType.Trigger);
-            ctrl.AddParameter(new AnimatorControllerParameter { name = "AttackSpeed", type = AnimatorControllerParameterType.Float, defaultFloat = 1f });
-
-            var sm = ctrl.layers[0].stateMachine;
-            var tree = new BlendTree
-            {
-                name = "Locomotion",
-                blendType = BlendTreeType.Simple1D,
-                blendParameter = "Speed",
-                useAutomaticThresholds = false,
-                hideFlags = HideFlags.HideInHierarchy
-            };
-            AssetDatabase.AddObjectToAsset(tree, ctrl);
-            if (idle != null) tree.AddChild(idle, 0f);
-            if (walk != null) tree.AddChild(walk, 0.35f);
-            if (run != null) tree.AddChild(run, 1f);
-            var loco = sm.AddState("Locomotion");
-            loco.motion = tree;
-            sm.defaultState = loco;
-
-            if (attack != null)
-            {
-                var mask = CreateUpperBodyMask();
-                ctrl.AddLayer("Attaque");
-                var layers = ctrl.layers;
-                var layer = layers[1];
-                layer.defaultWeight = 1f;
-                layer.avatarMask = mask;
-                layer.blendingMode = AnimatorLayerBlendingMode.Override;
-                var asm = layer.stateMachine;
-                var empty = asm.AddState("Vide");
-                // Write Defaults désactivé : l'état vide laisse passer la marche/course du calque de base
-                // (sinon il forcerait le haut du corps dans la pose par défaut de l'avatar).
-                empty.writeDefaultValues = false;
-                asm.defaultState = empty;
-                var atk = asm.AddState("Attaque");
-                atk.writeDefaultValues = false;
-                atk.motion = attack;
-                atk.speedParameterActive = true;
-                atk.speedParameter = "AttackSpeed";
-                var toAtk = asm.AddAnyStateTransition(atk);
-                toAtk.hasExitTime = false;
-                toAtk.duration = 0.05f;
-                toAtk.canTransitionToSelf = true;
-                toAtk.AddCondition(AnimatorConditionMode.If, 0f, "Attack");
-                var back = atk.AddTransition(empty);
-                back.hasExitTime = true;
-                back.exitTime = 0.9f;
-                back.duration = 0.12f;
-                ctrl.layers = layers;
-            }
-            EditorUtility.SetDirty(ctrl);
-            AssetDatabase.SaveAssets();
-            return ctrl;
-        }
     }
 }

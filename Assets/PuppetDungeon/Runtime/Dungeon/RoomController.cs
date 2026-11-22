@@ -72,6 +72,9 @@ namespace PuppetDungeon
             }
             else if (!Cleared) Clear(false);
 
+            if (kind == RoomKind.Exit && UIRoot.Instance != null)
+                UIRoot.Instance.Banner(Cleared ? $"La trappe des profondeurs ! [{InputHints.Interact}] pour descendre" : "La trappe des profondeurs est gardée…", new Color(1f, 0.85f, 0.5f));
+
             var dm = DungeonManager.Instance;
             if (AudioManager.Instance != null && dm != null && dm.Lib != null)
                 AudioManager.Instance.PlayMusic(dm.Lib.musicDungeon);
@@ -86,7 +89,7 @@ namespace PuppetDungeon
             int dungeon = GameManager.Instance.Run.dungeonIndex;
             var defs = new List<EnemyDefinition>();
 
-            bool boss = kind == RoomKind.Boss || (kind == RoomKind.Exit && Random.value < cfg.exitGuardianChance);
+            bool boss = kind == RoomKind.Boss || (kind == RoomKind.Exit && Random.value < cfg.ExitGuardianChance(dungeon));
             if (kind == RoomKind.Start) return;
             if (kind == RoomKind.Exit && !boss) return;
 
@@ -216,7 +219,11 @@ namespace PuppetDungeon
             gm.Run.roomsCleared++;
             AudioManager.Sfx(l => l.roomCleared);
             var player = PlayerController.Instance;
-            if (player != null) player.HealPercent(gm.PassiveTotal(PassiveKind.SecondWind));
+            if (player != null)
+            {
+                player.HealPercent(gm.PassiveTotal(PassiveKind.SecondWind));
+                if (player.rig != null) player.rig.Celebrate();
+            }
             if (UIRoot.Instance != null)
             {
                 UIRoot.Instance.Banner("Salle nettoyée", new Color(0.65f, 1f, 0.6f));

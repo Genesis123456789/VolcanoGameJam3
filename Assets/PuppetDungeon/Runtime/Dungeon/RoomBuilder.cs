@@ -381,10 +381,19 @@ namespace PuppetDungeon
             light.range = 5f;
             light.intensity = 2.5f;
 
+            // Quatre bornes lumineuses (sans collision) : la sortie ouverte se repère d'un coup d'œil
+            // sans masquer la trappe vue du dessus.
+            var mBeam = MaterialFactory.Tinted(null, accent, "exitBeam", 3f);
+            var beam = new GameObject("Bornes lumineuses");
+            beam.transform.SetParent(t, false);
+            foreach (var c in new[] { new Vector3(1.35f, 0f, 1.35f), new Vector3(-1.35f, 0f, 1.35f), new Vector3(1.35f, 0f, -1.35f), new Vector3(-1.35f, 0f, -1.35f) })
+                Block(beam.transform, c + Vector3.up * 0.55f, new Vector3(0.16f, 0.55f, 0.16f), mBeam, Cylinder, false, "borne");
+
             var inter = go.AddComponent<Interactable>();
             inter.radius = 2.2f;
             inter.prompt = "Descendre";
             var exit = go.AddComponent<ExitStairs>();
+            exit.beam = beam;
             exit.Configure(locked.gameObject, open.gameObject, light);
             return exit;
         }

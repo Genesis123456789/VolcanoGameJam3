@@ -30,6 +30,14 @@ namespace PuppetDungeon.EditorTools
         [MenuItem(Menu + "1. Setup complet (tout construire)", priority = 0)]
         public static void SetupEverything()
         {
+            // En mode Play, Unity interdit de sauvegarder/reconstruire les scènes : on sort du jeu puis on relance.
+            if (EditorApplication.isPlayingOrWillChangePlaymode)
+            {
+                Debug.Log("[PuppetDungeon] Sortie du mode Play, le setup démarre juste après…");
+                EditorApplication.playModeStateChanged += RunAfterPlayMode;
+                EditorApplication.isPlaying = false;
+                return;
+            }
             if (!EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo()) return;
             PDProjectSettings.EnsureLayersAndTags();
             if (!PDProjectSettings.UrpInstalled)
@@ -41,6 +49,13 @@ namespace PuppetDungeon.EditorTools
                 return;
             }
             RunAll();
+        }
+
+        private static void RunAfterPlayMode(PlayModeStateChange state)
+        {
+            if (state != PlayModeStateChange.EnteredEditMode) return;
+            EditorApplication.playModeStateChanged -= RunAfterPlayMode;
+            EditorApplication.delayCall += SetupEverything;
         }
 
         [MenuItem(Menu + "2. Jouer (ouvrir le menu principal)", priority = 1)]
@@ -70,6 +85,7 @@ namespace PuppetDungeon.EditorTools
         {
             PDAssets.CreateTextures();
             PDImport.ConfigureUISprites();
+            PDAssets.CreateOpaquePanels();
             UIBuilder.LoadTheme();
             var slot = PDUI.BuildSlot("PD_ItemSlot", "", 102f);
             var toast = PDUI.BuildToast();
@@ -106,26 +122,28 @@ namespace PuppetDungeon.EditorTools
                 PDProjectSettings.EnsureLayersAndTags();
                 PDProjectSettings.ConfigureGraphics();
 
-                Step("Import : sprites 9-slice, rig, animations, audio", 0.08f);
+                Step("Import : sprites 9-slice (panneaux opaques), rig, audio", 0.06f);
                 PDAssets.CreateTextures();
                 PDImport.ConfigureUISprites();
+                PDAssets.CreateOpaquePanels();
                 PDImport.ConfigureRig();
-                PDImport.ConfigureAnimation(PDPaths.AnimWalk, "PD_Walk", true);
-                PDImport.ConfigureAnimation(PDPaths.AnimRun, "PD_Run", true);
-                PDImport.ConfigureAnimation(PDPaths.AnimAttack, "PD_Attack", false);
                 PDImport.ConfigureAudio();
 
-                Step("Matériaux", 0.18f);
+                Step("Matériaux", 0.12f);
                 var mats = PDAssets.CreateMaterials();
                 PDAssets.UpgradeLegacyMaterials();
                 var arc = PDAssets.CreateArcMesh();
 
-                Step("Animator du pantin", 0.24f);
-                var walk = PDImport.Clip(PDPaths.AnimWalk);
-                var run = PDImport.Clip(PDPaths.AnimRun);
-                var attack = PDImport.Clip(PDPaths.AnimAttack);
-                var idle = PDAssets.CreateIdleClip(walk);
-                var ctrl = PDAssets.CreateAnimator(idle, walk, run, attack);
+                Step("Avatar humanoïde du pantin", 0.16f);
+                PDAvatarTools.BuildPuppetAvatar();
+
+                Step("Cuisson des animations (contrôleurs Maya → clips Humanoid)", 0.2f);
+                var animLib = PDAnimBaker.EnsureLibrary();
+                PDAnimBaker.BakeAll(animLib);
+
+                Step("Animator du pantin et jeux d'animations par arme", 0.28f);
+                var baseCtrl = PDAnimSets.CreateBaseController();
+                var animSets = PDAnimSets.BuildSets(animLib, baseCtrl, out var defaultAnims);
 
                 Step("Effets visuels, projectiles, butin", 0.32f);
                 UIBuilder.LoadTheme();
@@ -135,15 +153,16 @@ namespace PuppetDungeon.EditorTools
                 var loot = PDVfx.BuildLoot(mats);
 
                 Step("Pantins (joueur, villageois)", 0.42f);
-                var player = PDContent.BuildPlayer(ctrl, mats, PDRigTools.ClipLength(attack));
-                var villager = PDContent.BuildVillager(ctrl, mats);
+                PDRigTools.ResetAlignment();
+                var player = PDContent.BuildPlayer(defaultAnims, mats);
+                var villager = PDContent.BuildVillager(defaultAnims, mats);
 
                 Step("Pièces d'exemple à partir des FBX", 0.52f);
                 PDContent.BuildExampleParts(mats);
                 var db = PDContent.RefreshDatabase();
 
                 Step("Ennemis et boss", 0.62f);
-                var (enemies, bosses) = PDContent.BuildEnemies(ctrl, mats);
+                var (enemies, bosses) = PDContent.BuildEnemies(animSets, defaultAnims, mats);
 
                 Step("Thèmes et audio", 0.68f);
                 var themes = PDContent.BuildThemes(mats, out var villageTheme);
@@ -158,7 +177,8 @@ namespace PuppetDungeon.EditorTools
                 var mainMenu = PDUI.BuildMainMenu();
 
                 Step("Configuration du jeu", 0.82f);
-                PDContent.BuildConfig(db, enemies, bosses, player, villager, loot, bolt, orb, uiRoot, vfx, audio, themes);
+                var credits = PDContent.BuildCredits();
+                PDContent.BuildConfig(db, enemies, bosses, player, villager, loot, bolt, orb, uiRoot, vfx, audio, themes, defaultAnims, animSets, credits);
 
 #if PD_URP
                 Step("Post-process (Volume URP)", 0.86f);
@@ -170,9 +190,10 @@ namespace PuppetDungeon.EditorTools
                 PDScenes.BuildAll(uiRoot, mainMenu, villageTheme, themes.Count > 0 ? themes[0] : null);
                 AssetDatabase.SaveAssets();
                 AssetDatabase.Refresh();
+                try { PDAnimPreview.RenderAll(); } catch (Exception pe) { Debug.LogWarning("[PD-PREVIEW] " + pe.Message); }
                 EditorUtility.ClearProgressBar();
                 EditorUtility.DisplayDialog("Puppet Dungeon",
-                    "Setup terminé !\n\n• Scènes : Assets/PuppetDungeon/Generated/Scenes\n• Pièces : Assets/PuppetDungeon/Content/Parts\n• Réglages : Assets/PuppetDungeon/Resources/PD_GameConfig\n\nTools > Puppet Dungeon > 2. Jouer pour lancer le jeu.", "Super");
+                    "Setup terminé !\n\n• Scènes : Assets/PuppetDungeon/Generated/Scenes\n• Pièces : Assets/PuppetDungeon/Content/Parts\n• Animations : Assets/PuppetDungeon/Content/Animation\n• Crédits : Assets/PuppetDungeon/Content/PD_Credits\n• Réglages : Assets/PuppetDungeon/Resources/PD_GameConfig\n\nTools > Puppet Dungeon > 2. Jouer pour lancer le jeu.", "Super");
             }
             catch (Exception e)
             {

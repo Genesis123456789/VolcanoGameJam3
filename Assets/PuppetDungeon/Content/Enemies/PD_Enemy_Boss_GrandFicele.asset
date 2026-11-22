@@ -14,6 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: PuppetDungeon.Runtime::PuppetDungeon.EnemyDefinition
   displayName: "Le Grand Ficel\xE9"
   prefab: {fileID: 8118302874195071881, guid: dd741499e8edda240a9a0c25a3cb3e08, type: 3}
+  animations: {fileID: 11400000, guid: bd7933c2e85e6e3419576d898f338630, type: 2}
   behaviour: 3
   maxHealth: 420
   damage: 16

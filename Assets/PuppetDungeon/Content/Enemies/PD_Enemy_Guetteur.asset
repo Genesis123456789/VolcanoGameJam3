@@ -14,6 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: PuppetDungeon.Runtime::PuppetDungeon.EnemyDefinition
   displayName: Guetteur corrompu
   prefab: {fileID: 274323224127579040, guid: 71bd2404bcd5c844995f5d69ffc7301b, type: 3}
+  animations: {fileID: 11400000, guid: 804e4a83d9ae46247ba6c705184db314, type: 2}
   behaviour: 1
   maxHealth: 24
   damage: 7

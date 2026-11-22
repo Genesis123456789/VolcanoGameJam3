@@ -7,7 +7,6 @@ namespace PuppetDungeon
     {
         private static Mesh Cube => Resources.GetBuiltinResource<Mesh>("Cube.fbx");
         private static Mesh Cylinder => Resources.GetBuiltinResource<Mesh>("Cylinder.fbx");
-        private static Mesh Sphere => Resources.GetBuiltinResource<Mesh>("Sphere.fbx");
 
         public static void Build(RoomController plaza, DungeonTheme theme)
         {
@@ -21,7 +20,6 @@ namespace PuppetDungeon
             var mRoofB = MaterialFactory.Tinted(null, new Color(0.3f, 0.36f, 0.5f), "vRoofB");
             var mWood = MaterialFactory.Tinted(null, new Color(0.45f, 0.3f, 0.2f), "vWood");
             var mWindow = MaterialFactory.Tinted(null, new Color(1f, 0.75f, 0.4f), "vWindow", 2.5f);
-            var mLeaf = MaterialFactory.Tinted(null, new Color(0.35f, 0.5f, 0.3f), "vLeaf");
             var mCurtain = MaterialFactory.Tinted(null, accent, "vCurtain");
 
             // Maisonnettes contre le mur nord (en laissant le centre libre pour la porte)
@@ -45,15 +43,7 @@ namespace PuppetDungeon
             Block(stage, new Vector3(0.95f, 1.4f, -0.45f), new Vector3(0.45f, 1.3f, 0.08f), mCurtain);
             stage.gameObject.AddComponent<BoxCollider>().size = new Vector3(2.6f, 2.4f, 1.4f);
 
-            // Arbre
-            var tree = new GameObject("Arbre").transform;
-            tree.SetParent(root, false);
-            tree.localPosition = new Vector3(sx * 0.5f - 5f, 0f, sz * 0.5f + 1f);
-            Block(tree, new Vector3(0, 0.9f, 0), new Vector3(0.45f, 0.9f, 0.45f), mWood, Cylinder);
-            Block(tree, new Vector3(0, 2.3f, 0), new Vector3(2.2f, 1.7f, 2.2f), mLeaf, Sphere);
-            Block(tree, new Vector3(0.5f, 2.9f, 0.3f), new Vector3(1.4f, 1.2f, 1.4f), mLeaf, Sphere);
-            var tc = tree.gameObject.AddComponent<CapsuleCollider>();
-            tc.radius = 0.35f; tc.height = 2f; tc.center = new Vector3(0, 1f, 0);
+            // (L'ancien arbre en sphères a été retiré : sa place accueille l'échoppe de la Tisseuse.)
 
             // Lampadaires
             foreach (var p in new[] { new Vector3(sx * 0.5f - 2.5f, 0f, 3f), new Vector3(sx * 0.5f + 2.5f, 0f, 3f), new Vector3(sx * 0.5f - 2.5f, 0f, sz - 5f), new Vector3(sx * 0.5f + 2.5f, 0f, sz - 5f) })
@@ -110,6 +100,32 @@ namespace PuppetDungeon
         private static GameObject Block(Transform parent, Vector3 pos, Vector3 scale, Material mat, Mesh mesh = null)
         {
             return RoomBuilder.Block(parent, pos, scale, mat, mesh != null ? mesh : Cube, true, "décor");
+        }
+
+        /// <summary>Échoppe de la Tisseuse (gacha) : comptoir, auvent, bobines. Retourne la place du PNJ.</summary>
+        public static Vector3 BuildGachaStall(RoomController plaza, DungeonTheme theme)
+        {
+            int sx = plaza.size.x, sz = plaza.size.y;
+            var stall = new GameObject("Échoppe de la Tisseuse").transform;
+            stall.SetParent(plaza.transform, false);
+            stall.localPosition = new Vector3(sx * 0.5f - 5f, 0f, sz * 0.5f + 1.2f);
+            var mWood = MaterialFactory.Tinted(null, new Color(0.45f, 0.3f, 0.2f), "vWood");
+            var mCloth = MaterialFactory.Tinted(null, theme != null ? theme.accent : new Color(0.85f, 0.4f, 0.3f), "vCurtain");
+            var mGold = MaterialFactory.Tinted(null, new Color(0.95f, 0.72f, 0.3f), "vSpool", 1.2f);
+            Block(stall, new Vector3(0f, 0.5f, 0f), new Vector3(2.4f, 1f, 0.8f), mWood);
+            Block(stall, new Vector3(-1.1f, 1.3f, 0.3f), new Vector3(0.12f, 2.6f, 0.12f), mWood);
+            Block(stall, new Vector3(1.1f, 1.3f, 0.3f), new Vector3(0.12f, 2.6f, 0.12f), mWood);
+            var awning = Block(stall, new Vector3(0f, 2.55f, 0.05f), new Vector3(2.7f, 0.12f, 1.3f), mCloth);
+            awning.transform.localRotation = Quaternion.Euler(-12f, 0f, 0f);
+            for (int i = 0; i < 4; i++)
+            {
+                var spool = Block(stall, new Vector3(-0.8f + i * 0.53f, 1.12f, -0.1f), new Vector3(0.28f, 0.12f, 0.28f), mGold, Cylinder);
+                spool.transform.localRotation = Quaternion.Euler(0f, 0f, 90f);
+            }
+            var col = stall.gameObject.AddComponent<BoxCollider>();
+            col.center = new Vector3(0f, 0.6f, 0f);
+            col.size = new Vector3(2.4f, 1.2f, 0.8f);
+            return stall.position + new Vector3(0f, 0f, 1.0f);
         }
 
         /// <summary>Porte du nord : mène aux donjons suivants.</summary>

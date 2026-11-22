@@ -13,6 +13,9 @@ namespace PuppetDungeon
         public GameObject continueHint;
         public float charsPerSecond = 45f;
 
+        /// <summary>A / B font avancer le dialogue (géré par la boîte elle-même).</summary>
+        public override bool CloseOnCancel => false;
+
 
         public IEnumerator Say(string who, string line)
         {

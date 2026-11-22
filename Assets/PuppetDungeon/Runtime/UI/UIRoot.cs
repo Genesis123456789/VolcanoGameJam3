@@ -24,6 +24,7 @@ namespace PuppetDungeon
         public DragGhost dragGhost;
         public OfferingView offering;
         public DialogView dialog;
+        public GachaView gacha;
 
         [Header("Messages")]
         public CanvasGroup bannerGroup;
@@ -58,6 +59,14 @@ namespace PuppetDungeon
             if (titleGroup != null) titleGroup.alpha = 0f;
             if (bossGroup != null) bossGroup.alpha = 0f;
             EnsureEventSystem();
+            NoEllipsis(transform);
+        }
+
+        /// <summary>La police n'a pas le caractère « … » : on tronque simplement (évite un avertissement par texte).</summary>
+        public static void NoEllipsis(Transform root)
+        {
+            foreach (var t in root.GetComponentsInChildren<TMPro.TMP_Text>(true))
+                if (t.overflowMode == TMPro.TextOverflowModes.Ellipsis) t.overflowMode = TMPro.TextOverflowModes.Truncate;
         }
 
         private void OnDestroy()
@@ -67,10 +76,12 @@ namespace PuppetDungeon
 
         public static void EnsureEventSystem()
         {
-            if (EventSystem.current != null) return;
-            if (FindAnyObjectByType<EventSystem>() != null) return;
-            var go = new GameObject("EventSystem", typeof(EventSystem), typeof(UnityEngine.InputSystem.UI.InputSystemUIInputModule));
-            go.GetComponent<UnityEngine.InputSystem.UI.InputSystemUIInputModule>().AssignDefaultActions();
+            if (EventSystem.current == null && FindAnyObjectByType<EventSystem>() == null)
+            {
+                var go = new GameObject("EventSystem", typeof(EventSystem), typeof(UnityEngine.InputSystem.UI.InputSystemUIInputModule));
+                go.GetComponent<UnityEngine.InputSystem.UI.InputSystemUIInputModule>().AssignDefaultActions();
+            }
+            GamepadUI.Ensure();
         }
 
         private void Update()
@@ -91,6 +102,7 @@ namespace PuppetDungeon
         {
             if (gameOver != null && gameOver.IsOpen) return;
             if (InventoryOpen) { inventory.Close(); return; }
+            if (gacha != null && gacha.IsOpen) { gacha.Close(); return; }
             if (ModalOpen) return;
             if (pause != null) pause.Toggle();
         }

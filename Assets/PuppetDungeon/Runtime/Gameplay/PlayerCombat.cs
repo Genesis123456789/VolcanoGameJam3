@@ -30,8 +30,6 @@ namespace PuppetDungeon
         public StyleTuning crossbow = new StyleTuning { range = 0f, arc = 0f, damageMul = 1.1f, duration = 0.3f, cooldown = 0.25f, moveSpeedWhileAttacking = 0.45f, lunge = 0f };
         public StyleTuning shield = new StyleTuning { range = 1.6f, arc = 130f, damageMul = 0.8f, knockbackMul = 3f, duration = 0.42f, damageTakenWhileAttacking = 0.35f, lunge = 5f };
 
-        [Tooltip("Durée du clip d'attaque (renseignée par l'outil de setup) : sert à caler la vitesse d'animation.")]
-        public float attackClipLength = 0.8f;
 
         public bool IsAttacking { get; private set; }
         public bool WantsAutoRepeat => true;
@@ -44,9 +42,6 @@ namespace PuppetDungeon
         private int comboStep;
         private float comboResetTime;
         private readonly HashSet<Health> dashHits = new HashSet<Health>();
-        private Animator animator;
-        private static readonly int AttackId = Animator.StringToHash("Attack");
-        private static readonly int AttackSpeedId = Animator.StringToHash("AttackSpeed");
 
         private void Awake()
         {
@@ -84,11 +79,12 @@ namespace PuppetDungeon
             bool finisher = style == AttackStyle.Blade && comboStep == 2;
 
             player.FaceTowards(aim);
-            if (animator == null && player.rig != null) animator = player.rig.Animator;
-            if (animator != null && animator.runtimeAnimatorController != null)
+            if (player.rig != null)
             {
-                animator.SetFloat(AttackSpeedId, Mathf.Clamp(attackClipLength / Mathf.Max(0.05f, duration * 1.6f), 0.5f, 4f));
-                animator.SetTrigger(AttackId);
+                // En mouvement : attaque du haut du corps mélangée à la marche. À l'arrêt : corps entier.
+                bool moving = player.Speed01 > 0.15f;
+                player.rig.SetGuard(false);
+                player.rig.PlayAttack(moving, duration * 1.6f);
             }
             if (player.squash != null) player.squash.Punch(new Vector3(0.1f, -0.12f, 0.25f) * (finisher ? 1.6f : 1f));
             AudioManager.Sfx(l => style == AttackStyle.Crossbow ? l.shoot : l.swing, 0.8f, finisher ? 0.85f : 1f);

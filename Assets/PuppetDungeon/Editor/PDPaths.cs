@@ -19,6 +19,9 @@ namespace PuppetDungeon.EditorTools
         public const string Textures = Generated + "/Textures";
         public const string Meshes = Generated + "/Meshes";
         public const string Animation = Generated + "/Animation";
+        public const string BakedAnimation = Animation + "/Baked";
+        public const string AnimationSlots = Animation + "/Slots";
+        public const string Avatars = Animation + "/Avatars";
         public const string UI = Generated + "/UI";
         public const string Vfx = Generated + "/VFX";
         public const string Data = Generated + "/Data";
@@ -27,16 +30,21 @@ namespace PuppetDungeon.EditorTools
         public const string Parts = Content + "/Parts";
         public const string Enemies = Content + "/Enemies";
         public const string Themes = Content + "/Themes";
+        public const string ContentAnimation = Content + "/Animation";
+        public const string Credits = Content + "/PD_Credits.asset";
         public const string InputActions = Root + "/Input/PD_Controls.inputactions";
 
         // Assets fournis (cherchés aussi par nom si déplacés)
         public const string Rig = "Assets/Projet/Graphismes/rig_ff002.fbx";
-        public const string AnimWalk = "Assets/Projet/Animation/walk_cicle.fbx";
-        public const string AnimRun = "Assets/Projet/Animation/run_cicle.fbx";
-        public const string AnimAttack = "Assets/Projet/Animation/sworld_att.fbx";
+        /// <summary>Dossier scanné par l'outil de cuisson : déposez-y vos FBX d'animation.</summary>
+        public const string AnimationsFolder = "Assets/Projet/Animation";
+        /// <summary>Fichier où le rig d'animation est en pose de repos (sert à l'avatar du rig).</summary>
+        public const string AnimRestPose = "Assets/Projet/Animation/ALL_anime.fbx";
         public const string PartArm = "Assets/Projet/Graphismes/bras.fbx";
         public const string PartLeg = "Assets/Projet/Graphismes/jambe.fbx";
         public const string PartBody = "Assets/Projet/mode/mode_perso_en_vrais.fbx";
+        /// <summary>Corps de référence sur lequel les pièces sont modélisées (segments nommés comme les os).</summary>
+        public const string PartReference = PartBody;
         public const string PartSniper = "Assets/Projet/mode/additionell/mode_sniper.fbx";
         public const string PartShield = "Assets/Projet/mode/additionell/mode_shilder.fbx";
         public const string PartSword = "Assets/Projet/mode/additionell/mode_sworlder.fbx";
@@ -60,7 +68,7 @@ namespace PuppetDungeon.EditorTools
 
         public static void EnsureAllFolders()
         {
-            foreach (var f in new[] { Prefabs, PartVisuals, Materials, Textures, Meshes, Animation, UI, Vfx, Data, Scenes, Parts, Enemies, Themes, Resources })
+            foreach (var f in new[] { Prefabs, PartVisuals, Materials, Textures, Meshes, Animation, BakedAnimation, AnimationSlots, Avatars, UI, Vfx, Data, Scenes, Parts, Enemies, Themes, ContentAnimation, Resources })
                 EnsureFolder(f);
         }
 

@@ -49,8 +49,6 @@ namespace PuppetDungeon
         private Vector2 lastMousePos;
         private float mouseAimUntil;
         private float footstepTimer;
-        private Animator animator;
-        private static readonly int SpeedId = Animator.StringToHash("Speed");
 
         private void Awake()
         {
@@ -62,7 +60,7 @@ namespace PuppetDungeon
             playerInput = GetComponent<PlayerInput>();
             if (rig == null) rig = GetComponentInChildren<PuppetRig>();
             if (squash == null) squash = GetComponentInChildren<SquashStretch>();
-            animator = rig != null ? rig.Animator : GetComponentInChildren<Animator>();
+            var animator = rig != null ? rig.Animator : GetComponentInChildren<Animator>();
             if (animator != null) animator.applyRootMotion = false;
             gameObject.layer = Layers.Player;
             Layers.ConfigureCollisions();
@@ -127,6 +125,7 @@ namespace PuppetDungeon
             if (rig != null)
             {
                 rig.ApplyLoadout(gm.Run.inventory.equipped, gm.Config);
+                RefreshAnimations();
                 rig.SetWoodTint(gm.Run.woodTint);
             }
         }
@@ -166,8 +165,8 @@ namespace PuppetDungeon
 
             if (!Controller.enabled) return; // déplacement scripté en cours (il pilote l'animation)
             if (!IsDashing) Move(input);
+            UpdateEasterEgg(input);
             UpdateAnimator(IsDashing ? 1f : velocity.magnitude / Mathf.Max(0.1f, MoveSpeed));
-            LogAnimatorOnce();
         }
 
         private void HandleMenuInputs()
@@ -224,6 +223,18 @@ namespace PuppetDungeon
 
         private void UpdateAim(Vector3 moveInput)
         {
+            // Manette : le stick droit vise (prioritaire tant qu'il est incliné).
+            var pad = Gamepad.current;
+            if (pad != null)
+            {
+                Vector2 rs = pad.rightStick.ReadValue();
+                if (rs.sqrMagnitude > 0.2f)
+                {
+                    AimDirection = new Vector3(rs.x, 0f, rs.y).normalized;
+                    mouseAimUntil = 0f;
+                    return;
+                }
+            }
             var mouse = Mouse.current;
             if (mouse != null)
             {
@@ -245,6 +256,43 @@ namespace PuppetDungeon
                 }
             }
             AimDirection = moveInput.sqrMagnitude > 0.01f ? moveInput.normalized : Facing;
+        }
+
+        // ------------------------------------------------------------------ Easter egg « 67 »
+
+        private float sixPressedAt = -10f;
+        private float nextEmote;
+
+        /// <summary>
+        /// À l'arrêt : 6 puis 7 au clavier (rangée du haut ou pavé numérique), ou les deux sticks enfoncés
+        /// ensemble (L3 + R3) à la manette → le pantin se tourne vers la caméra et joue l'animation « 67 ».
+        /// </summary>
+        private void UpdateEasterEgg(Vector3 input)
+        {
+            bool idle = input.sqrMagnitude < 0.01f && Speed01 < 0.05f && !IsDashing && !ControlLocked && (Combat == null || !Combat.IsAttacking);
+            bool trigger = false;
+            var k = Keyboard.current;
+            if (k != null)
+            {
+                if (k.digit6Key.wasPressedThisFrame || k.numpad6Key.wasPressedThisFrame) sixPressedAt = Time.unscaledTime;
+                if ((k.digit7Key.wasPressedThisFrame || k.numpad7Key.wasPressedThisFrame) && Time.unscaledTime - sixPressedAt < 0.8f) trigger = true;
+            }
+            var g = Gamepad.current;
+            if (g != null && g.leftStickButton.isPressed && g.rightStickButton.isPressed
+                && (g.leftStickButton.wasPressedThisFrame || g.rightStickButton.wasPressedThisFrame))
+                trigger = true;
+            if (!trigger || !idle || Time.time < nextEmote || rig == null) return;
+            nextEmote = Time.time + 1.5f;
+            sixPressedAt = -10f;
+            var cam = Camera.main;
+            if (cam != null)
+            {
+                Vector3 toCam = cam.transform.position - transform.position;
+                toCam.y = 0f;
+                if (toCam.sqrMagnitude > 0.01f) FaceTowards(toCam);
+            }
+            rig.Celebrate();
+            if (squash != null) squash.Punch(new Vector3(0.08f, 0.12f, 0.08f));
         }
 
         private IEnumerator DashRoutine(Vector3 dir)
@@ -270,29 +318,25 @@ namespace PuppetDungeon
             IsDashing = false;
         }
 
-        private float diagAt = -1f;
-        private void LogAnimatorOnce()
-        {
-            if (animator == null) return;
-            if (diagAt < 0f) diagAt = Time.time + 2f;
-            if (diagAt == 0f || Time.time < diagAt) return;
-            diagAt = 0f;
-            var st = animator.GetCurrentAnimatorStateInfo(0);
-            var clips = animator.GetCurrentAnimatorClipInfo(0);
-            string clipNames = "";
-            foreach (var c in clips) clipNames += (c.clip != null ? c.clip.name : "null") + "(" + c.weight.ToString("0.00") + ") ";
-            Debug.Log($"[PD-DIAG] Animator joueur : enabled={animator.enabled} isHuman={animator.isHuman} " +
-                      $"avatar={(animator.avatar != null ? animator.avatar.name + " valid=" + animator.avatar.isValid + " human=" + animator.avatar.isHuman : "AUCUN")} " +
-                      $"controller={(animator.runtimeAnimatorController != null ? animator.runtimeAnimatorController.name : "AUCUN")} " +
-                      $"initialized={animator.isInitialized} speed={animator.speed} Speed={animator.GetFloat(SpeedId):0.00} " +
-                      $"state={st.fullPathHash} t={st.normalizedTime:0.00} clips={clipNames} culling={animator.cullingMode} " +
-                      $"hipsLocalRot={(animator.isHuman && animator.GetBoneTransform(HumanBodyBones.LeftUpperLeg) != null ? animator.GetBoneTransform(HumanBodyBones.LeftUpperLeg).localEulerAngles.ToString() : "-")}");
-        }
+        /// <summary>Vitesse actuelle normalisée (0 → 1), utilisée pour choisir l'attaque mélangée ou en corps entier.</summary>
+        public float Speed01 { get; private set; }
 
         private void UpdateAnimator(float speed01)
         {
-            if (animator == null || animator.runtimeAnimatorController == null) return;
-            animator.SetFloat(SpeedId, Mathf.Clamp01(speed01), 0.08f, Time.deltaTime);
+            Speed01 = Mathf.Clamp01(speed01);
+            if (rig == null) return;
+            // Marche à ~0.35 dans le blend tree, course au-delà selon la vitesse réelle.
+            rig.SetSpeed(Speed01 < 0.05f ? 0f : Mathf.Lerp(0.3f, 1f, Mathf.InverseLerp(0.2f, 1f, Speed01)));
+            // Pas de garde automatique : à l'arrêt, le joueur joue l'idle.
+            rig.SetGuard(false);
+        }
+
+        /// <summary>Applique le jeu d'animations de l'arme portée au bras droit.</summary>
+        public void RefreshAnimations()
+        {
+            var gm = GameManager.Instance;
+            if (rig == null || gm == null || gm.Config == null) return;
+            rig.UseAnimations(gm.Config.AnimationsFor(gm.CurrentAttackStyle()));
         }
 
         /// <summary>Déplacement scripté (traversée de porte, cinématiques).</summary>
@@ -357,6 +401,7 @@ namespace PuppetDungeon
 
         private void OnDamaged(DamageInfo info, float dmg)
         {
+            if (rig != null) rig.PlayHit();
             Juice.Shake(0.45f);
             Juice.Kick(info.direction, 0.25f);
             GameManager.Instance.HitStop(0.06f);

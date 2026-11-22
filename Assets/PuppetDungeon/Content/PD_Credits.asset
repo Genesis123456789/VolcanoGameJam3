@@ -1,0 +1,43 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9b68b48a90dc50984d11ec9781c3adf5, type: 3}
+  m_Name: PD_Credits
+  m_EditorClassIdentifier: PuppetDungeon.Runtime::PuppetDungeon.CreditsData
+  gameTitle: Puppet Dungeon
+  subtitle: Volcano Game Jam 3
+  sections:
+  - title: Direction & game design
+    lines:
+    - (votre nom ici)
+  - title: Programmation
+    lines:
+    - (votre nom ici)
+  - title: "Mod\xE9lisation, rig & animation"
+    lines:
+    - (votre nom ici)
+  - title: Interface & illustrations
+    lines:
+    - (votre nom ici)
+  - title: Musique & sons
+    lines:
+    - (votre nom ici)
+  - title: Outils
+    lines:
+    - "Unity 6 \u2022 Universal Render Pipeline \u2022 Input System \u2022 TextMeshPro"
+    - "Assistance au d\xE9veloppement : Claude (Anthropic)"
+  - title: Remerciements
+    lines:
+    - "Toute l'\xE9quipe de la Volcano Game Jam"
+    - Et vous, qui tirez encore nos fils.
+  closing: "Merci d'avoir jou\xE9 !"
+  scrollSpeed: 70
+  music: {fileID: 0}

@@ -15,16 +15,31 @@ namespace PuppetDungeon
         public TMP_Text villageLabel;
         public Image dashFill;
         public TMP_Text styleLabel;
+        public TMP_Text currencyLabel;
         public CanvasGroup promptGroup;
         public TMP_Text promptText;
         public RectTransform healthPunch;
+        [Tooltip("Aide des touches (vide = recherchée sous « Touches »).")]
+        public TMP_Text keysText;
+        private int keysMode = -1;
 
         private float lag = 1f;
         private float punchUntil;
         private float lastHealth = -1f;
 
+        private void Start()
+        {
+            if (keysText == null)
+                foreach (var t in GetComponentsInChildren<Transform>(true))
+                    if (t.name == "Touches") { keysText = t.GetComponentInChildren<TMP_Text>(true); break; }
+        }
+
         private void Update()
         {
+            // Aide des touches : clavier ou manette selon le dernier périphérique utilisé.
+            int mode = InputHints.UsingGamepad ? 1 : 0;
+            if (keysText != null && mode != keysMode) { keysMode = mode; keysText.text = InputHints.HudHelp(); }
+
             var player = PlayerController.Instance;
             var gm = GameManager.Instance;
             if (gm == null || gm.Run == null) return;
@@ -47,6 +62,7 @@ namespace PuppetDungeon
 
             if (puppetName != null) puppetName.text = $"{gm.Run.puppetName} <size=70%><color=#C9B79C>• Pantin n°{gm.Run.generation}</color></size>";
             if (styleLabel != null) styleLabel.text = EnumUtil.AttackStyleLabel(gm.CurrentAttackStyle());
+            if (currencyLabel != null) currencyLabel.text = gm.Run.currency > 0 ? $"<color=#F2C14E>{gm.Run.currency}</color> {gm.Config.currencyName}" : "";
 
             var dm = DungeonManager.Instance;
             if (dm != null)
@@ -70,7 +86,7 @@ namespace PuppetDungeon
                 Interactable near = player != null && !player.ControlLocked ? Interactable.Nearest(player.transform.position) : null;
                 float target = near != null ? 1f : 0f;
                 promptGroup.alpha = Mathf.MoveTowards(promptGroup.alpha, target, Time.unscaledDeltaTime * 6f);
-                if (near != null && promptText != null) promptText.text = $"<color=#F2C14E>[E]</color> {near.prompt}";
+                if (near != null && promptText != null) promptText.text = $"<color=#F2C14E>[{InputHints.Interact}]</color> {near.prompt}";
             }
         }
     }

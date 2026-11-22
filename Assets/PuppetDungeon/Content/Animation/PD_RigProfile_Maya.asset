@@ -1,0 +1,93 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1c4638352ae0775493959c2e9495137e, type: 3}
+  m_Name: PD_RigProfile_Maya
+  m_EditorClassIdentifier: PuppetDungeon.Runtime::PuppetDungeon.AnimationRigProfile
+  restPose: {fileID: 919132149155446097, guid: b2ae653dbeebb3249bb2ca148011a07d, type: 3}
+  boneNames: []
+  drivers:
+  - bone: 0
+    control: OFFSET2_Hips/nurbsCircle24
+    followPosition: 1
+    useStoredOffset: 1
+    storedRotation: {x: 0.70543, y: 0.70878, z: 0, w: 0}
+    storedPosition: {x: 0, y: 0, z: 0}
+  - bone: 7
+    control: OFFSET2_Spine/nurbsCircle25
+    followPosition: 0
+    useStoredOffset: 1
+    storedRotation: {x: 0.70543, y: 0.70878, z: 0, w: 0}
+    storedPosition: {x: 0, y: 0, z: 0}
+  - bone: 10
+    control: OFFSET2_Head/nurbsCircle32
+    followPosition: 0
+    useStoredOffset: 1
+    storedRotation: {x: 0.7034, y: 0.7108, z: 0, w: 0}
+    storedPosition: {x: 0, y: 0, z: 0}
+  - bone: 13
+    control: OFFSET2_LeftArm/nurbsCircle28
+    followPosition: 0
+    useStoredOffset: 1
+    storedRotation: {x: 0.70161, y: -0.08797, z: -0.08797, w: 0.70161}
+    storedPosition: {x: 0, y: 0, z: 0}
+  - bone: 15
+    control: OFFSET2_LeftForeArm/nurbsCircle30
+    followPosition: 0
+    useStoredOffset: 1
+    storedRotation: {x: 0.70186, y: -0.08597, z: -0.08597, w: 0.70186}
+    storedPosition: {x: 0, y: 0, z: 0}
+  - bone: 17
+    control: OFFSET2_LeftHand/nurbsCircle31
+    followPosition: 0
+    useStoredOffset: 1
+    storedRotation: {x: 0.70186, y: -0.08597, z: -0.08597, w: 0.70186}
+    storedPosition: {x: 0, y: 0, z: 0}
+  - bone: 14
+    control: OFFSET2_RightArm/nurbsCircle26
+    followPosition: 0
+    useStoredOffset: 1
+    storedRotation: {x: 0.06658, y: -0.69861, z: 0.70397, w: -0.10927}
+    storedPosition: {x: 0, y: 0, z: 0}
+  - bone: 16
+    control: offset_arm_R/nurbsCircle37
+    followPosition: 0
+    useStoredOffset: 1
+    storedRotation: {x: 0.06458, y: -0.69892, z: 0.70415, w: -0.10728}
+    storedPosition: {x: 0, y: 0, z: 0}
+  - bone: 18
+    control: offset_arm_R1/nurbsCircle37
+    followPosition: 0
+    useStoredOffset: 1
+    storedRotation: {x: 0.06458, y: -0.69892, z: 0.70415, w: -0.10728}
+    storedPosition: {x: 0, y: 0, z: 0}
+  ikLimbs:
+  - upper: 1
+    lower: 3
+    end: 5
+    goal: OFFSET2_LeftFoot/nurbsCircle23
+    pole: OFFSET_genoux_R/nurbsCircle35
+    useStoredOffset: 1
+    storedGoal: {x: 0, y: 0, z: 0}
+    polePivot: {x: 1.968798, y: 8.726612, z: 3.113337}
+  - upper: 2
+    lower: 4
+    end: 6
+    goal: OFFSET2_RightFoot/nurbsCircle20
+    pole: OFFSET_genoux_L/nurbsCircle33
+    useStoredOffset: 1
+    storedGoal: {x: 0, y: 0, z: 0}
+    polePivot: {x: 0, y: 0, z: 0}
+  unitReferenceBone: 7
+  unitReferenceLength: 7.298336
+  dataVersion: 2
+  sampleRate: 30
+  avatar: {fileID: 9000000, guid: 55f1d8dc3344bed47b78a70ef48387e5, type: 2}

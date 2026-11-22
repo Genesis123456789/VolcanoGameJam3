@@ -16,7 +16,7 @@ namespace PuppetDungeon.EditorTools
     {
         // ------------------------------------------------------------------ Pantins
 
-        public static GameObject BuildPlayer(AnimatorController ctrl, PDAssets.MaterialSet m, float attackClipLength)
+        public static GameObject BuildPlayer(PuppetAnimationSet anims, PDAssets.MaterialSet m)
         {
             int layer = LayerMask.NameToLayer("Player");
             var root = new GameObject("PD_Player");
@@ -36,10 +36,9 @@ namespace PuppetDungeon.EditorTools
             input.actions = actions;
             input.defaultActionMap = "Player";
             input.notificationBehavior = PlayerNotifications.InvokeCSharpEvents;
-            var combat = root.AddComponent<PlayerCombat>();
-            combat.attackClipLength = attackClipLength;
+            root.AddComponent<PlayerCombat>();
 
-            var rig = PDRigTools.BuildPuppetVisual(root.transform, ctrl, m.wood, PDRigTools.PlayerHeight, layer);
+            var rig = PDRigTools.BuildPuppetVisual(root.transform, anims, m.wood, PDRigTools.PlayerHeight, layer);
             var pc = root.AddComponent<PlayerController>();
             pc.rig = rig;
             pc.visualRoot = root.transform.Find("Visuel");
@@ -48,7 +47,7 @@ namespace PuppetDungeon.EditorTools
             return Save(root, PDPaths.Prefabs + "/PD_Player.prefab");
         }
 
-        public static GameObject BuildVillager(AnimatorController ctrl, PDAssets.MaterialSet m)
+        public static GameObject BuildVillager(PuppetAnimationSet anims, PDAssets.MaterialSet m)
         {
             var root = new GameObject("PD_Villager");
             var col = root.AddComponent<CapsuleCollider>();
@@ -56,13 +55,13 @@ namespace PuppetDungeon.EditorTools
             col.height = PDRigTools.PlayerHeight * 0.95f;
             col.radius = 0.3f;
             root.AddComponent<HitFlash>();
-            var rig = PDRigTools.BuildPuppetVisual(root.transform, ctrl, m.wood, PDRigTools.PlayerHeight * 0.95f, 0);
+            var rig = PDRigTools.BuildPuppetVisual(root.transform, anims, m.wood, PDRigTools.PlayerHeight * 0.95f, 0);
             var npc = root.AddComponent<VillagerNPC>();
             npc.rig = rig;
             return Save(root, PDPaths.Prefabs + "/PD_Villager.prefab");
         }
 
-        public static EnemyController BuildEnemyPrefab(string id, AnimatorController ctrl, PDAssets.MaterialSet m, IEnumerable<PartVisual> decorations, float height)
+        public static EnemyController BuildEnemyPrefab(string id, PuppetAnimationSet anims, PDAssets.MaterialSet m, IEnumerable<PartVisual> decorations, float height)
         {
             int layer = LayerMask.NameToLayer("Enemy");
             var root = new GameObject("PD_Enemy_" + id);
@@ -73,7 +72,7 @@ namespace PuppetDungeon.EditorTools
             cc.stepOffset = 0.3f;
             root.AddComponent<Health>();
             root.AddComponent<HitFlash>();
-            var rig = PDRigTools.BuildPuppetVisual(root.transform, ctrl, m.woodDark, height, layer);
+            var rig = PDRigTools.BuildPuppetVisual(root.transform, anims, m.woodDark, height, layer);
             if (rig != null) rig.decorations = decorations.Where(d => d != null).ToList();
             var ec = root.AddComponent<EnemyController>();
             ec.rig = rig;
@@ -176,8 +175,9 @@ namespace PuppetDungeon.EditorTools
                 var model = PDPaths.Find<GameObject>(spec.model);
                 if (model == null) { Debug.LogWarning("[PuppetDungeon] Modèle introuvable pour " + spec.name + " : " + spec.model); continue; }
                 PDImport.ConfigurePartModel(spec.model);
-                var visual = PDRigTools.BuildPartVisual(model, spec.slot, false, "PV_" + spec.id, m.partWood)
-                             ?? PDRigTools.BuildPartVisual(model, spec.slot, true, "PV_" + spec.id, m.partWood);
+                bool weapon = spec.style != AttackStyle.Fist || spec.model == PDPaths.PartShield;
+                var visual = PDRigTools.BuildPartVisual(model, spec.slot, false, "PV_" + spec.id, m.partWood, weapon)
+                             ?? PDRigTools.BuildPartVisual(model, spec.slot, true, "PV_" + spec.id, m.partWood, weapon);
                 if (visual == null) { Debug.LogWarning($"[PuppetDungeon] Aucun maillage de « {spec.model} » ne correspond à l'emplacement {spec.slot}."); continue; }
 
                 string path = PDPaths.Parts + "/PD_Part_" + spec.id + ".asset";
@@ -212,23 +212,24 @@ namespace PuppetDungeon.EditorTools
             var go = PDPaths.Find<GameObject>(model);
             if (go == null) return null;
             PDImport.ConfigurePartModel(model);
-            return PDRigTools.BuildPartVisual(go, null, false, "PV_Deco_" + id, mat);
+            return PDRigTools.BuildPartVisual(go, null, false, "PV_Deco_" + id, mat, true);
         }
 
         // ------------------------------------------------------------------ Ennemis
 
-        public static (List<EnemyDefinition> enemies, List<EnemyDefinition> bosses) BuildEnemies(AnimatorController ctrl, PDAssets.MaterialSet m)
+        public static (List<EnemyDefinition> enemies, List<EnemyDefinition> bosses) BuildEnemies(Dictionary<AttackStyle, PuppetAnimationSet> sets, PuppetAnimationSet fallback, PDAssets.MaterialSet m)
         {
+            PuppetAnimationSet A(AttackStyle s) => sets != null && sets.TryGetValue(s, out var v) && v != null ? v : fallback;
             var sword = BuildDecoration(PDPaths.PartSword, "Epee", m.woodDark);
             var sniper = BuildDecoration(PDPaths.PartSniper, "Arbalete", m.woodDark);
             var shield = BuildDecoration(PDPaths.PartShield, "Bouclier", m.woodDark);
 
-            var wanderer = BuildEnemyPrefab("Errant", ctrl, m, new[] { sword }, 2.0f);
-            var scout = BuildEnemyPrefab("Guetteur", ctrl, m, new[] { sniper }, 2.0f);
-            var rampart = BuildEnemyPrefab("Rempart", ctrl, m, new[] { shield }, 2.15f);
-            var howler = BuildEnemyPrefab("Hurleur", ctrl, m, new PartVisual[0], 1.75f);
-            var boss = BuildEnemyPrefab("GrandFicele", ctrl, m, new[] { sword, shield }, 2.05f);
-            var boss2 = BuildEnemyPrefab("Marionnettiste", ctrl, m, new[] { sniper, sword }, 2.05f);
+            var wanderer = BuildEnemyPrefab("Errant", A(AttackStyle.Blade), m, new[] { sword }, 2.0f);
+            var scout = BuildEnemyPrefab("Guetteur", A(AttackStyle.Crossbow), m, new[] { sniper }, 2.0f);
+            var rampart = BuildEnemyPrefab("Rempart", A(AttackStyle.Shield), m, new[] { shield }, 2.15f);
+            var howler = BuildEnemyPrefab("Hurleur", A(AttackStyle.Fist), m, new PartVisual[0], 1.75f);
+            var boss = BuildEnemyPrefab("GrandFicele", A(AttackStyle.Blade), m, new[] { sword, shield }, 2.05f);
+            var boss2 = BuildEnemyPrefab("Marionnettiste", A(AttackStyle.Crossbow), m, new[] { sniper, sword }, 2.05f);
 
             PDPaths.EnsureFolder(PDPaths.Enemies);
             var enemies = new List<EnemyDefinition>
@@ -252,6 +253,7 @@ namespace PuppetDungeon.EditorTools
             float range, float cooldown, float windup, float preferred, float weight, int minDungeon,
             float projectileSpeed = 9f, float chargeSpeed = 11f, bool boss = false, float scale = 1f, string title = "")
         {
+            var anims = prefab != null && prefab.rig != null ? prefab.rig.animationSet : null;
             string path = PDPaths.Enemies + "/PD_Enemy_" + id + ".asset";
             var def = AssetDatabase.LoadAssetAtPath<EnemyDefinition>(path);
             if (def == null)
@@ -278,6 +280,7 @@ namespace PuppetDungeon.EditorTools
                 AssetDatabase.CreateAsset(def, path);
             }
             def.prefab = prefab;
+            if (def.animations == null) def.animations = anims;
             EditorUtility.SetDirty(def);
             return def;
         }
@@ -364,6 +367,31 @@ namespace PuppetDungeon.EditorTools
             cue.pitch = new Vector2(pitchMin, pitchMax);
         }
 
+        // ------------------------------------------------------------------ Crédits
+
+        /// <summary>Crédits par défaut (à compléter dans Content/PD_Credits.asset — conservés ensuite).</summary>
+        public static CreditsData BuildCredits()
+        {
+            var c = AssetDatabase.LoadAssetAtPath<CreditsData>(PDPaths.Credits);
+            if (c != null) return c;
+            c = PDPaths.LoadOrCreate<CreditsData>(PDPaths.Credits);
+            c.gameTitle = GameInfo.Title;
+            c.subtitle = "Volcano Game Jam 3";
+            c.sections = new List<CreditsData.Section>
+            {
+                new CreditsData.Section { title = "Direction & game design", lines = new List<string> { "(votre nom ici)" } },
+                new CreditsData.Section { title = "Programmation", lines = new List<string> { "(votre nom ici)" } },
+                new CreditsData.Section { title = "Modélisation, rig & animation", lines = new List<string> { "(votre nom ici)" } },
+                new CreditsData.Section { title = "Interface & illustrations", lines = new List<string> { "(votre nom ici)" } },
+                new CreditsData.Section { title = "Musique & sons", lines = new List<string> { "(votre nom ici)" } },
+                new CreditsData.Section { title = "Outils", lines = new List<string> { "Unity 6 • Universal Render Pipeline • Input System • TextMeshPro", "Assistance au développement : Claude (Anthropic)" } },
+                new CreditsData.Section { title = "Remerciements", lines = new List<string> { "Toute l'équipe de la Volcano Game Jam", "Et vous, qui tirez encore nos fils." } },
+            };
+            c.closing = "Merci d'avoir joué !";
+            EditorUtility.SetDirty(c);
+            return c;
+        }
+
         // ------------------------------------------------------------------ Base de pièces + configuration
 
         public static PartDatabase RefreshDatabase()
@@ -377,7 +405,8 @@ namespace PuppetDungeon.EditorTools
         }
 
         public static GameConfig BuildConfig(PartDatabase db, List<EnemyDefinition> enemies, List<EnemyDefinition> bosses, GameObject player, GameObject villager,
-            LootPickup loot, Projectile bolt, Projectile orb, GameObject uiRoot, VfxLibrary vfx, AudioLibrary audio, List<DungeonTheme> themes)
+            LootPickup loot, Projectile bolt, Projectile orb, GameObject uiRoot, VfxLibrary vfx, AudioLibrary audio, List<DungeonTheme> themes,
+            PuppetAnimationSet defaultAnims, Dictionary<AttackStyle, PuppetAnimationSet> styleAnims, CreditsData credits)
         {
             var cfg = PDPaths.LoadOrCreate<GameConfig>(PDPaths.Resources + "/" + GameConfig.ResourcePath + ".asset");
             // Salles plus compactes (personnages plus lisibles, façon Link's Awakening)
@@ -395,6 +424,16 @@ namespace PuppetDungeon.EditorTools
             cfg.vfx = vfx;
             cfg.audio = audio;
             cfg.themes = themes;
+            if (cfg.defaultAnimations == null) cfg.defaultAnimations = defaultAnims;
+            if (cfg.styleAnimations == null) cfg.styleAnimations = new List<StyleAnimations>();
+            if (styleAnims != null)
+                foreach (var kv in styleAnims)
+                {
+                    var entry = cfg.styleAnimations.FirstOrDefault(x => x != null && x.style == kv.Key);
+                    if (entry == null) cfg.styleAnimations.Add(new StyleAnimations { style = kv.Key, set = kv.Value });
+                    else if (entry.set == null) entry.set = kv.Value;
+                }
+            if (cfg.credits == null) cfg.credits = credits;
             EditorUtility.SetDirty(cfg);
             return cfg;
         }

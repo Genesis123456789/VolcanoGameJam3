@@ -109,7 +109,7 @@ namespace PuppetDungeon
     [Serializable]
     public class BaseStats
     {
-        public float maxHealth = 60f;
+        public float maxHealth = 75f;
         public float damage = 8f;
         public float armor = 0f;
         public float moveSpeed = 5.5f;
