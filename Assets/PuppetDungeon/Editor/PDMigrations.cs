@@ -46,6 +46,26 @@ namespace PuppetDungeon.EditorTools
                 changed = true;
             }
 
+            // Crédits : les sections encore vides « (votre nom ici) » deviennent une section Équipe (nom + rôle).
+            if (credits != null && credits.sections != null && !credits.sections.Exists(s => s != null && s.people != null && s.people.Count > 0))
+            {
+                bool Placeholder(CreditsData.Section s) => s != null && (s.people == null || s.people.Count == 0) && s.lines != null && s.lines.Count > 0
+                                                           && s.lines.TrueForAll(l => l != null && l.Contains("votre nom ici"));
+                int first = credits.sections.FindIndex(Placeholder);
+                if (first >= 0)
+                {
+                    var team = PDContent.DefaultTeam();
+                    team.people.Clear();
+                    foreach (var s in credits.sections.FindAll(Placeholder))
+                        team.people.Add(new CreditsData.Person { name = "(Prénom Nom)", role = s.title });
+                    credits.sections.RemoveAll(Placeholder);
+                    credits.sections.Insert(Mathf.Min(first, credits.sections.Count), team);
+                    EditorUtility.SetDirty(credits);
+                    Debug.Log("[PuppetDungeon] Crédits : section « Équipe » avec un rôle par personne (Content/PD_Credits.asset).");
+                    changed = true;
+                }
+            }
+
             // Équilibrage v2 : premiers donjons plus doux.
             var cfg = Resources.Load<GameConfig>(GameConfig.ResourcePath);
             if (cfg != null && cfg.balanceVersion < 2)

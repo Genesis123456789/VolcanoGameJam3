@@ -35,7 +35,9 @@ namespace PuppetDungeon
             bool navigating = g.leftStick.ReadValue().sqrMagnitude > 0.25f || g.dpad.ReadValue().sqrMagnitude > 0.25f || g.buttonSouth.wasPressedThisFrame;
             if (!navigating) return;
             var cur = es.currentSelectedGameObject;
-            if (UIPanel.IsUsable(cur) && IsVisible(cur)) return;
+            // On ne reprend la main que si la sélection est perdue (vide, désactivée ou dans un panneau fermé) :
+            // un bouton simplement grisé (ex : « Offrir » sans pièce choisie) reste sélectionnable.
+            if (cur != null && cur.activeInHierarchy && IsVisible(cur)) return;
 
             GameObject target = null;
             if (top != null) target = top.FirstUsable();

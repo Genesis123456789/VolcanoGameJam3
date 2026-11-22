@@ -22,6 +22,7 @@ namespace PuppetDungeon
             UIRoot.EnsureEventSystem();
             if (title != null) title.text = GameInfo.Title.ToUpperInvariant();
             UIRoot.NoEllipsis(transform);
+            ScrollFollowSelection.AddTo(transform);
             if (playButton != null) playButton.onClick.AddListener(() => GameManager.Instance.StartNewRunFromMenu());
             if (optionsButton != null) optionsButton.onClick.AddListener(() => { if (options != null) options.Toggle(); });
             if (quitButton != null) quitButton.onClick.AddListener(Quit);

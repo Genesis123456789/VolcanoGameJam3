@@ -12,29 +12,30 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9b68b48a90dc50984d11ec9781c3adf5, type: 3}
   m_Name: PD_Credits
   m_EditorClassIdentifier: PuppetDungeon.Runtime::PuppetDungeon.CreditsData
+  roleColor: {r: 0.79, g: 0.72, b: 0.61, a: 1}
   gameTitle: Puppet Dungeon
   subtitle: Volcano Game Jam 3
   sections:
-  - title: Direction & game design
-    lines:
-    - (votre nom ici)
-  - title: Programmation
-    lines:
-    - (votre nom ici)
-  - title: "Mod\xE9lisation, rig & animation"
-    lines:
-    - (votre nom ici)
-  - title: Interface & illustrations
-    lines:
-    - (votre nom ici)
-  - title: Musique & sons
-    lines:
-    - (votre nom ici)
+  - title: "\xC9quipe"
+    people:
+    - name: "(Pr\xE9nom Nom)"
+      role: Direction & game design
+    - name: "(Pr\xE9nom Nom)"
+      role: Programmation
+    - name: "(Pr\xE9nom Nom)"
+      role: "Mod\xE9lisation, rig & animation"
+    - name: "(Pr\xE9nom Nom)"
+      role: Interface & illustrations
+    - name: "(Pr\xE9nom Nom)"
+      role: Musique & sons
+    lines: []
   - title: Outils
+    people: []
     lines:
     - "Unity 6 \u2022 Universal Render Pipeline \u2022 Input System \u2022 TextMeshPro"
     - "Assistance au d\xE9veloppement : Claude (Anthropic)"
   - title: Remerciements
+    people: []
     lines:
     - "Toute l'\xE9quipe de la Volcano Game Jam"
     - Et vous, qui tirez encore nos fils.

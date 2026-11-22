@@ -60,6 +60,7 @@ namespace PuppetDungeon
             if (bossGroup != null) bossGroup.alpha = 0f;
             EnsureEventSystem();
             NoEllipsis(transform);
+            ScrollFollowSelection.AddTo(transform);
         }
 
         /// <summary>La police n'a pas le caractère « … » : on tronque simplement (évite un avertissement par texte).</summary>

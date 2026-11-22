@@ -24,6 +24,18 @@ namespace PuppetDungeon
         public AudioClip musicMenu;
         [Range(0f, 1f)] public float musicVolume = 0.55f;
 
+        [Header("Réglages des effets sonores")]
+        [Tooltip("Volume général de tous les effets (multiplie le volume de chaque son).")]
+        [Range(0f, 1f)] public float sfxVolume = 0.4f;
+        [Tooltip("Variation aléatoire de hauteur ajoutée à chaque son (± %), pour éviter l'effet « mitraillette ».")]
+        [Range(0f, 0.3f)] public float pitchJitter = 0.1f;
+        [Tooltip("Variation aléatoire de volume (jusqu'à − %).")]
+        [Range(0f, 0.5f)] public float volumeJitter = 0.2f;
+        [Tooltip("Nombre maximum d'occurrences d'un même son jouées en même temps.")]
+        [Min(1)] public int maxVoicesPerSound = 2;
+        [Tooltip("Filtre passe-bas (Hz) appliqué aux effets : adoucit les aigus agressifs. 22000 = désactivé.")]
+        [Range(1000f, 22000f)] public float lowPassCutoff = 5500f;
+
         [Header("Combat")]
         public SoundCue swing = new SoundCue();
         public SoundCue hit = new SoundCue();

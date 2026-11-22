@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -105,6 +106,27 @@ namespace PuppetDungeon
         {
             foreach (var c in cards) if (c != null) Destroy(c.gameObject);
             cards.Clear();
+            WireNavigation();
+        }
+
+        /// <summary>Manette : grille des résultats ↔ boutons du bas (la zone défile pour suivre la sélection).</summary>
+        private void WireNavigation()
+        {
+            var items = cards.Where(c => c != null).Select(c => c.button != null ? (Selectable)c.button : c.GetComponent<Selectable>()).Where(s => s != null).ToList();
+            var lastRow = UINav.WireGrid(items, UINav.Columns(resultsGrid, 4), pullOneButton, null);
+            var buttons = new[] { pullOneButton, pullMultiButton, closeButton };
+            for (int i = 0; i < buttons.Length; i++)
+            {
+                if (buttons[i] == null) continue;
+                if (lastRow == null) { buttons[i].navigation = new Navigation { mode = Navigation.Mode.Automatic }; continue; }
+                buttons[i].navigation = new Navigation
+                {
+                    mode = Navigation.Mode.Explicit,
+                    selectOnLeft = i > 0 ? buttons[i - 1] : null,
+                    selectOnRight = i < buttons.Length - 1 ? buttons[i + 1] : null,
+                    selectOnUp = lastRow,
+                };
+            }
         }
 
         private IEnumerator Reveal(List<Gacha.Result> results)
@@ -126,6 +148,7 @@ namespace PuppetDungeon
                 yield return PopIn(card.transform, r.part.rarity);
             }
             revealing = false;
+            WireNavigation();
             Refresh();
             if (cards.Count > 0 && EventSystem.current != null && pullOneButton != null)
                 EventSystem.current.SetSelectedGameObject(pullOneButton.interactable ? pullOneButton.gameObject : (closeButton != null ? closeButton.gameObject : null));
